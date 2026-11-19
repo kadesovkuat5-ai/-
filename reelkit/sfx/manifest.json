@@ -1,0 +1,47 @@
+{
+  "whoosh": {
+    "file": "whoosh.mp3",
+    "duration": 0.57,
+    "description": "Punchy whoosh/impact — fast reveal or hard transition accent. Sync to the motion."
+  },
+  "whoosh-short": {
+    "file": "whoosh-short.mp3",
+    "duration": 0.57,
+    "description": "Short whoosh — quick swipe/slide accent, fast element move, snappy transition. Sync to the motion."
+  },
+  "pop": {
+    "file": "pop.mp3",
+    "duration": 0.72,
+    "description": "Quick pop — element appear/spawn, chip/tag/badge in. Small precise accent, sync to the pop-in."
+  },
+  "click": {
+    "file": "click.mp3",
+    "duration": 0.37,
+    "description": "Crisp UI click — button press, toggle, selection. Short accent, sync exactly to the on-screen action."
+  },
+  "chime": {
+    "file": "chime.mp3",
+    "duration": 2.5,
+    "description": "Soft melodic chime — gentle positive beat: success/confirmation or a lighthearted transition. Sync to the visual moment."
+  },
+  "riser": {
+    "file": "riser.mp3",
+    "duration": 10.03,
+    "description": "Long cinematic riser (~10s build, peak at the end). Trigger at (climax_time − 10.03s) so it crests exactly on the reveal."
+  },
+  "impact-bass-1": {
+    "file": "impact-bass-1.mp3",
+    "duration": 2.12,
+    "description": "Bass impact hit — logo/hero snap, headline slam. Trigger on the visual landing; decay carries into the next shot (J-cut)."
+  },
+  "sparkle": {
+    "file": "sparkle.mp3",
+    "duration": 1.8,
+    "description": "Bright sparkle / shimmer — magical reveal or 'shine' highlight on a hero element. Sync to the highlight."
+  },
+  "ping": {
+    "file": "ping.mp3",
+    "duration": 1.32,
+    "description": "Sharp electronic ping — punchy accent on a key reveal or data point. Sync to the beat."
+  }
+}

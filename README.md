@@ -1,4 +1,31 @@
-# ReelMate: AI editing assistant for Instagram Reels
+# ReelMate: AI video editing assistant for Instagram Reels
+
+This project has two tools:
+
+1. **ReelKit** (`reelkit/`): Claude analyzes and edits your raw footage, then builds a **CapCut kit**:
+   separate clips, separate audio, sound effects, synced SRT subtitles, an MP4 **preview** and a detailed
+   editing timeline, so you can keep editing in CapCut on iPhone.
+   → Step-by-step guide (Kazakh): [docs/WORKFLOW.md](docs/WORKFLOW.md)
+   → Can a real CapCut project be generated? [docs/CAPCUT_DRAFT_RESEARCH.md](docs/CAPCUT_DRAFT_RESEARCH.md)
+2. **ReelMate web app** (`index.html`): a simple in-browser editor (described below).
+
+> The preview MP4 is a finished, flat video. It is **not** an editable project.
+
+## ReelKit quick start
+
+```bash
+pip install -r reelkit/requirements.txt        # Whisper speech-to-text (needs ffmpeg too)
+python3 reelkit/reelkit.py analyze input/ --language kk
+python3 reelkit/reelkit.py plan --target 30 --hook "Hook text" --music input/music.mp3
+#   (Claude reviews and improves work/edit.json here)
+python3 reelkit/reelkit.py build --name my_reel   # → output/my_reel_capcut_kit.zip
+```
+
+Sound effects in `reelkit/sfx/` come from Pixabay (free licence, see `reelkit/sfx/CREDITS.md`).
+
+---
+
+## ReelMate web app
 
 A simple, dark, mobile-friendly web app that helps you turn any video into an Instagram Reel.
 It runs **entirely in your browser**. Your video is never uploaded anywhere.

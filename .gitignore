@@ -1,0 +1,5 @@
+work/
+output/
+input/*
+!input/.gitkeep
+__pycache__/
