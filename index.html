@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0b12" />
+  <title>ReelMate – AI Reels Editor</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ============ HEADER ============ -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo">▶</div>
+      <div>
+        <h1>ReelMate</h1>
+        <p class="tagline">Your AI editing assistant for Instagram Reels</p>
+      </div>
+    </div>
+
+    <!-- Step navigation: tap a step to jump to it -->
+    <nav class="steps-nav" aria-label="Editing steps">
+      <button class="step-pill active" data-target="step-upload"><span>1</span>Upload</button>
+      <button class="step-pill" data-target="step-preview" disabled><span>2</span>Preview</button>
+      <button class="step-pill" data-target="step-suggest" disabled><span>3</span>Tips</button>
+      <button class="step-pill" data-target="step-subs" disabled><span>4</span>Subtitles</button>
+      <button class="step-pill" data-target="step-format" disabled><span>5</span>9:16</button>
+      <button class="step-pill" data-target="step-export" disabled><span>6</span>Export</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ STEP 1: UPLOAD ============ -->
+    <section class="card" id="step-upload">
+      <div class="card-head">
+        <span class="badge">1</span>
+        <div>
+          <h2>Upload your video</h2>
+          <p class="hint">Your video stays on your device. Nothing is sent to a server.</p>
+        </div>
+      </div>
+
+      <label class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept="video/*" hidden />
+        <div class="drop-icon">⬆</div>
+        <strong>Tap to choose a video</strong>
+        <span class="hint">or drag &amp; drop it here · MP4 or MOV work best</span>
+      </label>
+
+      <div class="file-info hidden" id="fileInfo"></div>
+    </section>
+
+    <!-- ============ STEP 2: PREVIEW ============ -->
+    <section class="card locked" id="step-preview">
+      <div class="card-head">
+        <span class="badge">2</span>
+        <div>
+          <h2>Preview</h2>
+          <p class="hint">This shows exactly how your Reel will look after export.</p>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="phone-frame">
+          <canvas id="preview" width="540" height="960"></canvas>
+          <div class="safe-zone" id="safeZone" hidden>
+            <span>Instagram buttons cover this area</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="player-controls">
+        <button class="icon-btn" id="playBtn" aria-label="Play">▶</button>
+        <input type="range" id="seek" min="0" max="1" step="0.01" value="0" aria-label="Seek" />
+        <span class="time" id="timeLabel">0:00 / 0:00</span>
+      </div>
+
+      <div class="toggles">
+        <label class="switch"><input type="checkbox" id="showSubs" checked /><span></span>Show subtitles</label>
+        <label class="switch"><input type="checkbox" id="showSafe" /><span></span>Show safe zone</label>
+      </div>
+
+      <!-- The real video element is hidden. We draw its frames onto the canvas above. -->
+      <video id="video" playsinline preload="auto"></video>
+    </section>
+
+    <!-- ============ STEP 3: SUGGESTIONS ============ -->
+    <section class="card locked" id="step-suggest">
+      <div class="card-head">
+        <span class="badge">3</span>
+        <div>
+          <h2>Editing suggestions</h2>
+          <p class="hint">Checks length, lighting, pacing and framing, then tells you what to improve.</p>
+        </div>
+      </div>
+
+      <button class="btn primary" id="analyzeBtn">✨ Analyze my video</button>
+      <div class="progress hidden" id="analyzeProgress"><div></div></div>
+      <ul class="suggestions" id="suggestions"></ul>
+    </section>
+
+    <!-- ============ STEP 4: SUBTITLES ============ -->
+    <section class="card locked" id="step-subs">
+      <div class="card-head">
+        <span class="badge">4</span>
+        <div>
+          <h2>Subtitles</h2>
+          <p class="hint">Most people watch Reels with the sound off. Type or paste what is said, and the captions get timed automatically.</p>
+        </div>
+      </div>
+
+      <textarea id="scriptInput" rows="4" placeholder="Example: Hey guys! Today I'll show you my 3 favorite coffee spots in town. Let's go!"></textarea>
+
+      <div class="row">
+        <label class="field">
+          <span>Words per caption</span>
+          <select id="wordsPer">
+            <option value="2">2 – punchy</option>
+            <option value="3" selected>3 – Reels style</option>
+            <option value="5">5 – relaxed</option>
+          </select>
+        </label>
+        <button class="btn primary grow" id="genSubsBtn">💬 Generate subtitles</button>
+      </div>
+
+      <div class="row">
+        <label class="field">
+          <span>Style</span>
+          <select id="subStyle">
+            <option value="outline">White + outline</option>
+            <option value="box">Black box</option>
+            <option value="yellow">Bold yellow</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Size</span>
+          <select id="subSize">
+            <option value="s">Small</option>
+            <option value="m" selected>Medium</option>
+            <option value="l">Large</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Position</span>
+          <select id="subPos">
+            <option value="top">Top</option>
+            <option value="middle">Middle</option>
+            <option value="bottom" selected>Bottom (safe)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="caption-list" id="captionList"></div>
+
+      <div class="row">
+        <button class="btn ghost grow" id="addCaptionBtn">＋ Add caption at current time</button>
+        <button class="btn ghost grow" id="srtBtn" disabled>⬇ Download .srt</button>
+      </div>
+    </section>
+
+    <!-- ============ STEP 5: FORMAT 9:16 ============ -->
+    <section class="card locked" id="step-format">
+      <div class="card-head">
+        <span class="badge">5</span>
+        <div>
+          <h2>9:16 format &amp; trim</h2>
+          <p class="hint">Reels are vertical (1080 × 1920). Choose how your video fits the frame.</p>
+        </div>
+      </div>
+
+      <div class="format-options" role="radiogroup">
+        <label class="format-card">
+          <input type="radio" name="format" value="fill" checked />
+          <div class="format-thumb fill"><i></i></div>
+          <strong>Fill &amp; crop</strong>
+          <span>Fills the whole screen</span>
+        </label>
+        <label class="format-card">
+          <input type="radio" name="format" value="blur" />
+          <div class="format-thumb blur"><i></i></div>
+          <strong>Fit + blur</strong>
+          <span>Shows everything</span>
+        </label>
+        <label class="format-card">
+          <input type="radio" name="format" value="bars" />
+          <div class="format-thumb bars"><i></i></div>
+          <strong>Fit + black</strong>
+          <span>Classic bars</span>
+        </label>
+      </div>
+
+      <label class="field" id="cropField">
+        <span>Crop position <em class="hint" id="cropLabel">center</em></span>
+        <input type="range" id="cropX" min="0" max="1" step="0.01" value="0.5" />
+      </label>
+
+      <div class="row">
+        <label class="field">
+          <span>Start (sec)</span>
+          <input type="number" id="trimStart" min="0" step="0.1" value="0" inputmode="decimal" />
+        </label>
+        <label class="field">
+          <span>End (sec)</span>
+          <input type="number" id="trimEnd" min="0" step="0.1" value="0" inputmode="decimal" />
+        </label>
+      </div>
+      <div class="row">
+        <button class="btn ghost grow" id="setStartBtn">⇤ Start = now</button>
+        <button class="btn ghost grow" id="setEndBtn">End = now ⇥</button>
+      </div>
+      <p class="hint" id="trimInfo"></p>
+    </section>
+
+    <!-- ============ STEP 6: EXPORT ============ -->
+    <section class="card locked" id="step-export">
+      <div class="card-head">
+        <span class="badge">6</span>
+        <div>
+          <h2>Export</h2>
+          <p class="hint">Creates your finished Reel with the crop, trim and subtitles burned in.</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <label class="field">
+          <span>Quality</span>
+          <select id="quality">
+            <option value="720">720p (faster)</option>
+            <option value="1080" selected>1080p (best for Reels)</option>
+          </select>
+        </label>
+      </div>
+
+      <button class="btn primary big" id="exportBtn">🎬 Export Reel</button>
+      <div class="export-status hidden" id="exportStatus">
+        <div class="progress"><div id="exportBar"></div></div>
+        <p class="hint" id="exportText">Exporting…</p>
+        <button class="btn ghost" id="cancelExportBtn">Cancel</button>
+      </div>
+
+      <div class="result hidden" id="result">
+        <video id="resultVideo" controls playsinline></video>
+        <a class="btn primary big" id="downloadLink" download>⬇ Download video</a>
+        <p class="hint" id="resultNote"></p>
+      </div>
+    </section>
+
+    <footer class="footer">Made with ❤ · runs 100% in your browser</footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
