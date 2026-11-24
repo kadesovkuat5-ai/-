@@ -162,6 +162,7 @@ h2{margin:0;font:700 15px/1.25 var(--f-display);text-wrap:balance}
       <button class="chip" type="button" data-view="top">Жоғарыдан</button>
       <button class="chip" type="button" data-view="goal">Қақпа артынан</button>
       <button class="chip" type="button" data-view="tv">ТВ ракурс</button>
+      <button class="chip" type="button" data-view="gate">Кіреберіс</button>
     </div>
     <div>
       <h2>Билеттегі орынды жазыңыз</h2>
@@ -219,6 +220,7 @@ h2{margin:0;font:700 15px/1.25 var(--f-display);text-wrap:balance}
       <div class="field" style="flex:1"><label class="lbl" for="eCity">Қала</label><input class="inp" id="eCity"></div>
     </div>
     <div class="field"><label class="lbl" for="eStadium">Стадион аты</label><input class="inp" id="eStadium"></div>
+    <div class="field"><label class="lbl" for="eLetters">Трибунадағы жазу (орындықтармен)</label><input class="inp" id="eLetters" maxlength="12"></div>
     <div class="field"><label class="lbl" for="eFormation">Схема</label><select id="eFormation"></select></div>
     <div>
       <span class="lbl">Түстер</span>
@@ -250,11 +252,11 @@ h2{margin:0;font:700 15px/1.25 var(--f-display);text-wrap:balance}
    немесе сайттағы «Өңдеу» бөлімінде жазуға болады.
    ===================================================================== */
 const DEFAULT_DATA = {
-  stadium: { name: "Ақжайық стадионы", city: "Орал" },
+  stadium: { name: "П. Атоян стадионы", city: "Орал", letters: "АКЖАЙЫК" },
   active: 0,
   teams: [
     { name: "Ақжайық", short: "АҚЖ", city: "Орал", formation: "4-3-3",
-      colors: { shirt: "#1d7a43", shorts: "#ffffff", number: "#ffffff" },
+      colors: { shirt: "#f4c400", shorts: "#1f4fb4", number: "#1f4fb4" },
       players: [
         { num: 1,  name: "Ойыншы 1",  pos: "ҚҚ" },
         { num: 2,  name: "Ойыншы 2",  pos: "ҚОР" },
@@ -281,14 +283,15 @@ const FORMATIONS = {
   "3-5-2":   [[0,.03],[-.5,.2],[0,.17],[.5,.2],[-.88,.44],[-.35,.36],[0,.46],[.35,.36],[.88,.44],[-.25,.7],[.25,.7]]
 };
 /* Трибуналар (шамамен модель, нақты сызба емес) */
+/* Трибуналар Яндекс картасындағы жерсерік суреті мен фотолар бойынша (өлшемдері шамамен) */
 const STANDS = [
-  { id:"W", name:"Батыс (шатырлы)", letter:"A", side:-1, rows:20, roof:true },
-  { id:"E", name:"Шығыс",           letter:"B", side: 1, rows:16, roof:false }
+  { id:"W", name:"Батыс (павильон жағы)",  letter:"A", side:-1, rows:14, sectors:6, gapAfter:4, gap:14, roof:false },
+  { id:"E", name:"Шығыс («АҚЖАЙЫҚ» жазуы)", letter:"B", side: 1, rows:20, sectors:7, roof:false }
 ];
-const SECTORS = 6, SEATS = 34, SEAT_W = .5, AISLE = 1.2, ROW_D = .85, ROW_H = .45, FRONT = 48.5;
+const SEATS = 34, SEAT_W = .5, AISLE = 1.2, ROW_D = .85, ROW_H = .45, FRONT = 48.5;
 
 /* ---------------- Data store (localStorage is only a convenience) ---------------- */
-const KEY = "stadium3d.v1";
+const KEY = "stadium3d.v2";
 let DATA;
 try { DATA = JSON.parse(localStorage.getItem(KEY)) } catch(e) {}
 if (!DATA || !DATA.teams) DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
@@ -347,7 +350,7 @@ const TR_IN = 36.5, TR_OUT = 46.3, TR_L = 84.39;
 const apron = new THREE.Mesh(new THREE.PlaneGeometry(140,150), mat("#8d9188")); apron.rotation.x=-Math.PI/2; apron.position.y=.01; apron.receiveShadow=true; scene.add(apron);
 // Track
 const trackShape = stadiumPath(TR_OUT, TR_L); trackShape.holes.push(stadiumPath(TR_IN, TR_L, new THREE.Path()));
-const track = new THREE.Mesh(new THREE.ShapeGeometry(trackShape, 48), mat("#b4513a",{roughness:.95}));
+const track = new THREE.Mesh(new THREE.ShapeGeometry(trackShape, 48), mat("#a3584a",{roughness:.95}));
 track.rotation.x = -Math.PI/2; track.position.y = .03; track.receiveShadow = true; scene.add(track);
 for (let i=1;i<8;i++){ const r=TR_IN+i*(TR_OUT-TR_IN)/8; const pts=stadiumPath(r,TR_L,new THREE.Path()).getPoints(48).map(p=>new THREE.Vector3(p.x,.05,-p.y));
   scene.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({color:"#efe3dc",transparent:true,opacity:.55}))); }
@@ -402,40 +405,41 @@ for (const s of [-1,1]){ const m=mat("#ffffff",{emissive:"#ffffff",emissiveInten
   b.position.set(s*(TR_OUT+.9),.5,0); b.castShadow=true; scene.add(b); }
 
 /* ---------------- Stands + seats ---------------- */
-const concrete = mat("#b9b8b1"), concreteDark = mat("#8e8d87"), steel = mat("#5b6168",{metalness:.5,roughness:.5});
-const sectorLen = SEATS*SEAT_W, standLen = SECTORS*sectorLen + (SECTORS-1)*AISLE;
-const SEATLIST = [];   // index -> {stand, sector, row, seat, pos:Vector3, facing}
+const concrete = mat("#c3c1b9"), concreteDark = mat("#9a9890"), steel = mat("#5b6168",{metalness:.5,roughness:.5});
+const sectorLen = SEATS*SEAT_W;
+const SEATLIST = [];   // index -> {stand, sector, row, seat, pos:Vector3}
+for (const st of STANDS){ // sector start offsets along the stand (north -> south)
+  st.starts=[]; let z=0;
+  for (let k=0;k<st.sectors;k++){ st.starts.push(z); z+=sectorLen; if(k<st.sectors-1) z += (k+1===st.gapAfter ? st.gap : AISLE); }
+  st.len=z; }
 function seatZ(stand, sector, seat){ // numbering goes left -> right as the spectator faces the pitch
-  const k = (sector-1)*(sectorLen+AISLE) + (seat-.5)*SEAT_W - standLen/2;
+  const k = stand.starts[sector-1] + (seat-.5)*SEAT_W - stand.len/2;
   return stand.side>0 ? -k : k;
 }
+const zN = (st,k)=> st.side>0 ? -k : k;   // offset from north end -> world z, mirrored for E numbering
 for (const st of STANDS){
-  const s = st.side, depth = st.rows*ROW_D + 1.2;
+  const s = st.side, depth = st.rows*ROW_D + 1.2, L = st.len;
   for (let r=1;r<=st.rows;r++){ const h = 1.6+(r-1)*ROW_H, d = 1+(r-1)*ROW_D;
-    box(ROW_D, h, standLen+2, r%2?concrete:concreteDark, s*(FRONT+d), h/2, 0, false, true); }
+    box(ROW_D, h, L+1, r%2?concrete:concreteDark, s*(FRONT+d), h/2, 0, false, true); }
   const topH = 1.6+(st.rows-1)*ROW_H, backX = s*(FRONT+depth);
-  box(1.2,1.4,standLen+2,concrete, s*(FRONT+.1), .7, 0);                         // front wall
-  box(.4, topH+(st.roof?7:1.4), standLen+2, concreteDark, backX, (topH+(st.roof?7:1.4))/2, 0); // back wall
-  for (const e of [-1,1]) box(depth, topH+1, .4, concreteDark, s*(FRONT+depth/2), (topH+1)/2, e*(standLen/2+1));
-  // aisles: lighter stair strips
-  for (let k=1;k<SECTORS;k++){ const z = k*(sectorLen+AISLE)-AISLE/2-standLen/2;
-    for (let r=1;r<=st.rows;r++){ const h=1.6+(r-1)*ROW_H, d=1+(r-1)*ROW_D; box(ROW_D,.02,AISLE,mat("#d8d6cf"),s*(FRONT+d),h+.01,z,false,true); } }
-  for (let sec=1;sec<=SECTORS;sec++) for (let r=1;r<=st.rows;r++) for (let n=1;n<=SEATS;n++){
+  box(1.2,1.4,L+1,mat("#e9e4d6"), s*(FRONT+.1), .7, 0);                             // front wall
+  box(.4, topH+1.6, L+1, concreteDark, backX, (topH+1.6)/2, 0);                      // back wall + rail
+  for (const e of [-1,1]) box(depth, topH+1.2, .4, concreteDark, s*(FRONT+depth/2), (topH+1.2)/2, e*(L/2+.5));
+  for (let k=0;k<st.sectors-1;k++){ if (k+1===st.gapAfter) continue;               // stair aisles
+    const z = st.starts[k]+sectorLen+AISLE/2-L/2;
+    for (let r=1;r<=st.rows;r++){ const h=1.6+(r-1)*ROW_H, d=1+(r-1)*ROW_D; box(ROW_D,.02,AISLE,mat("#dcd9d0"),s*(FRONT+d),h+.01,z,false,true); } }
+  for (let sec=1;sec<=st.sectors;sec++) for (let r=1;r<=st.rows;r++) for (let n=1;n<=SEATS;n++){
     const h = 1.6+(r-1)*ROW_H, d = 1+(r-1)*ROW_D;
     SEATLIST.push({ stand:st, sector:sec, row:r, seat:n, pos:new THREE.Vector3(s*(FRONT+d), h, seatZ(st,sec,n)) });
   }
-  if (st.roof){ // cantilever roof over main stand
-    const rx0 = FRONT-1.5, rx1 = FRONT+depth+1.5, y0 = topH+8.5, y1 = topH+6.2, w = rx1-rx0;
-    const roof = new THREE.Mesh(new THREE.BoxGeometry(Math.hypot(w,y0-y1),.35,standLen+6), mat("#dfe3e6",{metalness:.3,roughness:.45}));
-    roof.position.set(s*(rx0+rx1)/2,(y0+y1)/2,0); roof.rotation.z = s*Math.atan2(y0-y1,w)*-1; roof.castShadow=true; roof.receiveShadow=true; scene.add(roof);
-    const rail = new THREE.Mesh(new THREE.BoxGeometry(.5,1.1,standLen+6), mat(team().colors.shirt)); rail.position.set(s*rx0,y0-.4,0); scene.add(rail); rail.userData.teamColor=true;
-    for (let z=-standLen/2; z<=standLen/2+.1; z+=standLen/6){
-      box(.5,y1+.3,.5,steel,s*(rx1-.8),(y1+.3)/2,z);
-      const tr=new THREE.Mesh(new THREE.BoxGeometry(w,.3,.3),steel); tr.position.set(s*(rx0+rx1)/2,(y0+y1)/2-.4,z); tr.rotation.z=roof.rotation.z; scene.add(tr);
-    }
-    // glazed VIP strip behind last row
-    const vip = new THREE.Mesh(new THREE.BoxGeometry(.3,1.6,standLen*.5), mat("#9fd3ff",{emissive:"#3a7fb3",emissiveIntensity:.25,metalness:.6,roughness:.15}));
-    vip.position.set(backX - s*.25, topH+2.4, 0); scene.add(vip);
+  if (st.gapAfter){ // central pavilion (press / VIP) in the gap of the west stand
+    const zc = st.starts[st.gapAfter-1]+sectorLen+st.gap/2-L/2, w = st.gap-1, hh = topH+4.5;
+    const wall = mat("#f1efe8"), blue = mat("#1f4fb4");
+    box(depth-1, hh, w, wall, s*(FRONT+depth/2+.5), hh/2, zc);
+    box(.3, 2.6, w-1.5, mat("#9fd3ff",{emissive:"#3a7fb3",emissiveIntensity:.25,metalness:.6,roughness:.15}), s*(FRONT+1.1), hh-2.2, zc);
+    box(depth+2, .35, w+2, mat("#f7f7f4",{roughness:.5}), s*(FRONT+depth/2), hh+.2, zc);  // white flat roof (seen on satellite)
+    box(.4, .6, w+2, blue, s*(FRONT-.5), hh-.1, zc);
+    for (let r=0;r<3;r++) box(1.6, .2, 3, mat("#dcd9d0"), s*(FRONT+1+r*1.4), .4+r*.5, zc);  // steps to the pitch
   }
 }
 // One merged seat geometry, drawn as a single InstancedMesh
@@ -453,52 +457,82 @@ seats.castShadow = true; seats.receiveShadow = true;
   SEATLIST.forEach((s,i)=>{ o.position.copy(s.pos); o.rotation.set(0, s.stand.side>0 ? -Math.PI/2 : Math.PI/2, 0); o.updateMatrix(); seats.setMatrixAt(i,o.matrix); }); }
 scene.add(seats);
 let selectedSeat = -1;
-function seatColor(s){ const t=team(); const c=new THREE.Color(t.colors.shirt);
-  // stripe pattern: club colour with lighter band rows 7-8 and shorts-colour sector edges
-  if (s.row===7||s.row===8) c.lerp(new THREE.Color(t.colors.shorts),.85);
-  else if (s.seat<=2||s.seat>=SEATS-1) c.lerp(new THREE.Color("#ffffff"),.25);
-  return c; }
-function paintSeats(){ SEATLIST.forEach((s,i)=>seats.setColorAt(i, i===selectedSeat ? new THREE.Color("#ffd24a") : seatColor(s))); seats.instanceColor.needsUpdate=true; }
-paintSeats();
+const YEL=new THREE.Color("#f2c200"), BLU=new THREE.Color("#12358f"), SEL=new THREE.Color("#ff2d6f");
+let letterMask=null;
+function buildLetterMask(){ // seat-sized raster of the word on the east stand, one letter per sector like the real one
+  const st=STANDS.find(x=>x.id==="E"), cols=Math.round(st.len/SEAT_W), rows=st.rows, K=4;
+  const c=document.createElement("canvas"); c.width=cols*K; c.height=rows*K; const g=c.getContext("2d");
+  const word=(DATA.stadium.letters||"").toUpperCase().replace(/\s+/g,"");
+  g.fillStyle="#000"; g.strokeStyle="#000"; g.textAlign="center"; g.textBaseline="middle"; g.font=`900 ${rows*K*1.0}px Arial Black, Arial, sans-serif`;
+  const draw=(ch,cx,maxW)=>{ const mw=g.measureText(ch).width||1; g.save(); g.translate(cx,rows*K*.52); g.scale(Math.min(1.25,maxW/mw),.86); g.fillText(ch,0,0); g.lineWidth=K*2.2; g.lineJoin="round"; g.strokeText(ch,0,0); g.restore(); };
+  if (word.length===st.sectors) [...word].forEach((ch,i)=>draw(ch,(st.starts[i]+sectorLen/2)/SEAT_W*K,(SEATS-6)*K));
+  else if (word) { const per=cols*K/word.length; [...word].forEach((ch,i)=>draw(ch,per*(i+.5),per*.8)); }
+  const d=g.getImageData(0,0,c.width,c.height).data; letterMask={cols,rows,K,w:c.width,d};
+}
+function seatColor(s){ const st=s.stand;
+  if (st.id==="E"){ const m=letterMask, col=Math.floor((s.pos.z+st.len/2)/SEAT_W), y=(st.rows-s.row);
+    const a=m.d[((y*m.K+m.K/2)*m.w + col*m.K+m.K/2)*4+3]; return a>100 ? BLU : YEL; }
+  // west: northern sectors blue with a yellow block, southern sectors yellow with blue edges (satellite photo)
+  if (s.sector<=st.gapAfter){ const inner = s.seat>6 && s.seat<SEATS-5 && s.row>3 && s.row<st.rows-1; return inner?YEL:BLU; }
+  return (s.seat<=2||s.seat>=SEATS-1) ? BLU : YEL; }
+function paintSeats(){ SEATLIST.forEach((s,i)=>seats.setColorAt(i, i===selectedSeat ? SEL : seatColor(s))); seats.instanceColor.needsUpdate=true; }
+buildLetterMask(); paintSeats();
 // selected-seat marker
-const marker = new THREE.Mesh(new THREE.ConeGeometry(.35,.9,16), new THREE.MeshBasicMaterial({color:"#ffd24a"}));
+const marker = new THREE.Mesh(new THREE.ConeGeometry(.35,.9,16), new THREE.MeshBasicMaterial({color:"#ff2d6f"}));
 marker.rotation.x = Math.PI; marker.visible=false; scene.add(marker);
 
-/* Curves behind the goals: grass banks with low terrace */
-for (const zs of [-1,1]){ const bank=new THREE.Mesh(new THREE.CylinderGeometry(TR_OUT+16,TR_OUT+6,4,40,1,true,zs>0?-Math.PI/2:Math.PI/2,Math.PI), mat("#5d7b45",{side:THREE.DoubleSide}));
-  bank.position.set(0,2,zs*TR_L/2); bank.receiveShadow=true; scene.add(bank); }
+let scoreMat = mat("#ffffff");   // (no scoreboard on the real stadium; kept for applyTeam)
+function scoreTexture(){ return null; }
 
-/* Scoreboard at south end */
-let scoreMat = mat("#ffffff",{emissive:"#ffffff",emissiveIntensity:.6});
-function scoreTexture(){ const t=team(); return canvasTex(1024,360,(g,w,h)=>{ g.fillStyle="#05080a"; g.fillRect(0,0,w,h);
-  g.fillStyle=t.colors.shirt; g.fillRect(0,0,w,64); g.fillStyle=t.colors.number; g.font="700 34px Golos Text, sans-serif"; g.textAlign="center"; g.textBaseline="middle";
-  g.fillText((DATA.stadium.name+" · "+DATA.stadium.city).toUpperCase(), w/2, 34);
-  g.fillStyle="#ffffff"; g.font="800 96px Unbounded, Arial Black, sans-serif"; g.fillText(t.short.toUpperCase()+"  0 : 0", w/2, 180);
-  g.fillStyle="#ffd24a"; g.font="700 44px Golos Text, sans-serif"; g.fillText("ҚОШ КЕЛДІҢІЗ!", w/2, 298); }); }
-{ const sb=new THREE.Mesh(new THREE.BoxGeometry(16,5.6,.5),[mat("#222"),mat("#222"),mat("#222"),mat("#222"),scoreMat,mat("#222")]);
-  sb.position.set(0,11,TR_L/2+TR_OUT+8); sb.rotation.y=Math.PI; sb.castShadow=true; scene.add(sb);
-  for (const x of [-5,5]) box(.6,8.5,.6,steel,x,4.25,TR_L/2+TR_OUT+8.4); }
-
-/* Floodlight masts */
+/* Lattice floodlight towers (photos show steel truss masts) */
 const floods = [], floodHeads = [];
-for (const [x,z] of [[-66,-72],[66,-72],[66,72],[-66,72]]){
-  const m=new THREE.Mesh(new THREE.CylinderGeometry(.5,.9,42,10),steel); m.position.set(x,21,z); m.castShadow=true; scene.add(m);
-  const head=new THREE.Group(); head.position.set(x,43,z); head.lookAt(0,0,0); scene.add(head);
-  const frame=new THREE.Mesh(new THREE.BoxGeometry(9,5,.6),steel); head.add(frame);
+const latticeTex = canvasTex(64,64,(g,w,h)=>{ g.clearRect(0,0,w,h); g.strokeStyle="#6d737a"; g.lineWidth=4; g.strokeRect(0,0,w,h); g.beginPath(); g.moveTo(0,0); g.lineTo(w,h); g.moveTo(w,0); g.lineTo(0,h); g.stroke(); }, true);
+latticeTex.repeat.set(1,22);
+const latticeMat = new THREE.MeshStandardMaterial({ map:latticeTex, transparent:true, alphaTest:.4, side:THREE.DoubleSide, metalness:.4, roughness:.6 });
+for (const [x,z] of [[-64,-70],[64,-70],[64,70],[-64,70]]){
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(.9,2.8,44,4,1,true),latticeMat); m.position.set(x,22,z); m.rotation.y=Math.PI/4; m.castShadow=true; scene.add(m);
+  const head=new THREE.Group(); head.position.set(x,45.5,z); head.lookAt(0,0,0); scene.add(head);
+  const frame=new THREE.Mesh(new THREE.BoxGeometry(6,4.5,.6),steel); head.add(frame);
   const lm=new THREE.MeshStandardMaterial({color:"#fffbe8",emissive:"#fff6d6",emissiveIntensity:.2}); floodHeads.push(lm);
-  for (let i=0;i<4;i++) for (let j=0;j<3;j++){ const l=new THREE.Mesh(new THREE.PlaneGeometry(1.6,1.1),lm); l.position.set(-3.3+i*2.2,-1.4+j*1.4,.35); head.add(l); }
-  const sp=new THREE.SpotLight("#fff3dc",0,260,Math.PI/5,.6,1.2); sp.position.set(x,43,z); sp.target.position.set(x*.15,0,z*.15); scene.add(sp,sp.target); floods.push(sp);
+  for (let i=0;i<4;i++) for (let j=0;j<4;j++){ const l=new THREE.Mesh(new THREE.PlaneGeometry(1.1,.85),lm); l.position.set(-2.1+i*1.4,-1.6+j*1.05,.35); head.add(l); }
+  const sp=new THREE.SpotLight("#fff3dc",0,260,Math.PI/5,.6,1.2); sp.position.set(x,45,z); sp.target.position.set(x*.15,0,z*.15); scene.add(sp,sp.target); floods.push(sp);
 }
 
-/* Trees and city around */
-{ const trunk=mat("#5a4632"), leaf=mat("#3c6b35"), leaf2=mat("#4f7d3a");
-  const rnd=(a,b)=>a+Math.random()*(b-a);
-  for (let i=0;i<120;i++){ const a=Math.random()*Math.PI*2, r=rnd(110,200); const x=Math.cos(a)*r*1.1, z=Math.sin(a)*r*1.25; const h=rnd(5,9);
+/* Main entrance: white arch with a yellow ball, blue canopies, yellow pavilions (from photos) */
+const GATE_Z = TR_L/2+TR_OUT+16;
+{ const g=new THREE.Group(); g.position.set(0,0,GATE_Z); scene.add(g);
+  const add=(geo,m,x,y,z,ry)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); if(ry) o.rotation.y=ry; o.castShadow=true; o.receiveShadow=true; g.add(o); return o; };
+  const white=mat("#f4f4f2",{roughness:.5}), yellow=mat("#f1d35a"), blue=mat("#1f4fb4",{roughness:.5}), mural=mat("#5aa7d8");
+  for (const sx of [-1,1]){
+    add(new THREE.BoxGeometry(14,4.2,7),yellow,sx*16,2.1,0); add(new THREE.BoxGeometry(14.4,.35,7.4),white,sx*16,4.35,0);
+    add(new THREE.BoxGeometry(14.05,1,7.05),mural,sx*16,.5,0);
+    const sign=canvasTex(512,96,(c,w,h)=>{ c.fillStyle="#1f4fb4"; c.fillRect(0,0,w,h); c.fillStyle="#fff"; c.font="800 46px Arial, sans-serif"; c.textAlign="center"; c.textBaseline="middle"; c.fillText(sx<0?"П.АТОЯН атындағы":"СТАДИОН им. П.АТОЯНА",w/2,h/2+2); });
+    add(new THREE.BoxGeometry(8,.3,4.5),blue,sx*5.5,4.6,1.5);
+    const sg=add(new THREE.PlaneGeometry(8,1.3),mat("#ffffff",{map:sign,emissive:"#ffffff",emissiveMap:sign,emissiveIntensity:.3}),sx*5.5,5.4,3.76);
+    for (const cx of [-3.6,3.6]) for (const cz of [-.4,3.4]) add(new THREE.CylinderGeometry(.09,.09,4.6,8),blue,sx*5.5+cx,2.3,cz);
+    const fin=add(new THREE.BoxGeometry(.5,8,2.2),white,sx*1.3,4,0); fin.rotation.z=sx*.12;
+  }
+  add(new THREE.CylinderGeometry(.18,.18,9,10),white,0,4.5,0);
+  add(new THREE.SphereGeometry(1.1,24,16),mat("#f2c200",{roughness:.35,metalness:.1}),0,9.6,0);
+  for (const sx of [-1,1]) add(new THREE.BoxGeometry(16,1.3,.1),blue,sx*31,.65,0);   // blue railings
+}
+const plaza=new THREE.Mesh(new THREE.PlaneGeometry(90,40),mat("#b8b2a8")); plaza.rotation.x=-Math.PI/2; plaza.position.set(0,.02,GATE_Z+6); plaza.receiveShadow=true; scene.add(plaza);
+
+/* Surroundings from the satellite view: long old building north-west, private houses east, trees west */
+{ const rnd=(a,b)=>a+Math.random()*(b-a);
+  box(14,8,90,mat("#d8d0c2"),-(FRONT+34),4,-38); box(15,.6,91,mat("#7a4a36"),-(FRONT+34),8.3,-38);
+  const roofs=["#b23a2e","#3d6fb6","#7a7f86","#8a5a3c","#2f8a66"], walls=["#efe9dc","#e4ddd0","#f3efe6","#d9d4cb"];
+  for (let i=0;i<70;i++){ const x=rnd(78,210), z=rnd(-170,170), w=rnd(7,11), d=rnd(7,10), h=rnd(3,4.5);
+    if (Math.abs(z)>110 && x<100) continue;
+    box(w,h,d,mat(walls[i%4]),x,h/2,z);
+    const rf=new THREE.Mesh(new THREE.ConeGeometry(Math.max(w,d)*.75,2.6,4),mat(roofs[i%5])); rf.position.set(x,h+1.3,z); rf.rotation.y=Math.PI/4; rf.scale.set(w/Math.max(w,d),1,d/Math.max(w,d)); rf.castShadow=true; scene.add(rf); }
+  const trunk=mat("#5a4632"), leaf=mat("#3c6b35"), leaf2=mat("#4f7d3a");
+  for (let i=0;i<170;i++){ const x=rnd(-230,-75), z=rnd(-200,200), h=rnd(6,11);
+    if (x>-100 && z>-90 && z<20) continue;
     const t=new THREE.Mesh(new THREE.CylinderGeometry(.25,.35,h*.4,6),trunk); t.position.set(x,h*.2,z); scene.add(t);
     const c=new THREE.Mesh(new THREE.SphereGeometry(h*.35,8,6),i%2?leaf:leaf2); c.position.set(x,h*.55,z); c.scale.y=1.3; c.castShadow=true; scene.add(c); }
-  const bm=[mat("#d9cfc0"),mat("#c7ccd3"),mat("#e2d6c2")];
-  for (let i=0;i<46;i++){ const a=Math.random()*Math.PI*2, r=rnd(230,420); const h=rnd(8,34);
-    const b=new THREE.Mesh(new THREE.BoxGeometry(rnd(14,30),h,rnd(12,26)),bm[i%3]); b.position.set(Math.cos(a)*r,h/2,Math.sin(a)*r); b.rotation.y=Math.random()*3; scene.add(b); } }
+  for (let i=0;i<40;i++){ const a=Math.random()*Math.PI*2, r=rnd(120,190); const x=Math.cos(a)*r, z=Math.sin(a)*r*1.2; if (x>70) continue; const h=rnd(5,9);
+    const c=new THREE.Mesh(new THREE.SphereGeometry(h*.35,8,6),leaf2); c.position.set(x,h*.55,z); c.scale.y=1.3; scene.add(c); } }
 
 /* ---------------- Players ---------------- */
 const playersGroup = new THREE.Group(); scene.add(playersGroup);
@@ -562,7 +596,8 @@ const VIEWS = {
   overview: ()=>[new THREE.Vector3(122,66,58), new THREE.Vector3(0,0,0), 45],
   top:      ()=>[new THREE.Vector3(0,165,1), new THREE.Vector3(0,0,0), 45],
   goal:     ()=>[new THREE.Vector3(0,9,TR_L/2+TR_OUT+2), new THREE.Vector3(0,0,0), 52],
-  tv:       ()=>[new THREE.Vector3(-(FRONT-5),21,0), new THREE.Vector3(0,0,0), 48]
+  gate:     ()=>[new THREE.Vector3(14,7,GATE_Z+34), new THREE.Vector3(0,4,GATE_Z), 50],
+  tv:       ()=>[new THREE.Vector3(-(FRONT+14),24,0), new THREE.Vector3(0,0,0), 48]
 };
 function goView(name){ const [p,t,f]=VIEWS[name](); exitSeatUI(); setCam(p,t,f,"orbit");
   document.querySelectorAll("#viewChips .chip").forEach(c=>c.setAttribute("aria-pressed", c.dataset.view===name)); }
@@ -643,7 +678,7 @@ function renderSeatCard(){
       <dt>Алаң шетіне дейін</dt><dd>${st.dTouch.toFixed(0)} м</dd>
       <dt>Қарау бұрышы</dt><dd>${st.elev.toFixed(0)}° жоғарыдан</dd>
       <dt>Орналасуы</dt><dd>${st.zone}</dd>
-      <dt>Шатыр</dt><dd>${s.stand.roof?"Бар — жаңбыр, күн өтпейді":"Жоқ — ашық аспан"}</dd>
+      <dt>Шатыр</dt><dd>Жоқ — ашық трибуна</dd>
     </dl>
     <div class="lbl">${MONTHS[W.month-1]}, ${hhmm(W.hour)}, ${WX[W.kind].n.toLowerCase()} кезінде</div>${wxHtml(s)}
     <div class="row"><button class="btn" type="button" id="seatLook">👀 Осы орыннан қарау</button></div>`;
@@ -704,7 +739,7 @@ document.querySelectorAll("#viewChips .chip").forEach(c=>c.onclick=()=>goView(c.
 
 $("fStand").innerHTML = STANDS.map(s=>`<option value="${s.id}">${s.letter} · ${s.name}</option>`).join("");
 function fillSectors(){ const st=STANDS.find(s=>s.id===$("fStand").value); const v=$("fSector").value;
-  $("fSector").innerHTML = Array.from({length:SECTORS},(_,i)=>`<option value="${i+1}">${st.letter}${i+1}</option>`).join(""); if(v) $("fSector").value=v;
+  $("fSector").innerHTML = Array.from({length:st.sectors},(_,i)=>`<option value="${i+1}">${st.letter}${i+1}</option>`).join(""); if(v) $("fSector").value=v;
   $("fRow").max=st.rows; $("fSeat").max=SEATS; }
 $("fStand").onchange=fillSectors; fillSectors(); $("fSector").value="3";
 function syncForm(){ const s=SEATLIST[selectedSeat]; $("fStand").value=s.stand.id; fillSectors(); $("fSector").value=s.sector; $("fRow").value=s.row; $("fSeat").value=s.seat; }
@@ -725,13 +760,13 @@ $("fTeam").onchange=e=>{ DATA.active=+e.target.value; persist(); applyTeam(); to
 function applyTeam(){
   renderHeader(); renderTeams(); buildPlayers(); renderRoster(); paintSeats(); $("playerCard").hidden=true;
   const bt=boardTexture(); boardMats.forEach(m=>{ m.map=bt; m.needsUpdate=true; });
-  scoreMat.map=scoreTexture(); scoreMat.emissiveMap=scoreMat.map; scoreMat.needsUpdate=true;
+  buildLetterMask(); paintSeats();
   scene.traverse(o=>{ if(o.userData.teamColor) o.material.color.set(team().colors.shirt); });
 }
 
 /* Editor */
 $("eFormation").innerHTML = Object.keys(FORMATIONS).map(f=>`<option>${f}</option>`).join("");
-function fillEditor(){ const t=team(); $("eName").value=t.name; $("eShort").value=t.short; $("eCity").value=t.city; $("eStadium").value=DATA.stadium.name;
+function fillEditor(){ const t=team(); $("eName").value=t.name; $("eShort").value=t.short; $("eCity").value=t.city; $("eStadium").value=DATA.stadium.name; $("eLetters").value=DATA.stadium.letters||"";
   $("eFormation").value=t.formation; $("cShirt").value=t.colors.shirt; $("cShorts").value=t.colors.shorts; $("cNum").value=t.colors.number;
   $("eplayers").innerHTML = t.players.slice(0,11).map((p,i)=>`<div class="edrow">
     <input class="inp" id="en${i}" type="number" min="1" max="99" value="${p.num}" aria-label="Нөмір">
@@ -739,7 +774,7 @@ function fillEditor(){ const t=team(); $("eName").value=t.name; $("eShort").valu
     <input class="inp" id="ep${i}" value="${esc(p.pos)}" aria-label="Позиция"></div>`).join(""); }
 $("btnSave").onclick=()=>{ const t=team();
   t.name=$("eName").value.trim()||t.name; t.short=($("eShort").value.trim()||t.short).slice(0,4); t.city=$("eCity").value.trim();
-  DATA.stadium.name=$("eStadium").value.trim()||DATA.stadium.name; t.formation=$("eFormation").value;
+  DATA.stadium.name=$("eStadium").value.trim()||DATA.stadium.name; DATA.stadium.letters=$("eLetters").value.trim(); t.formation=$("eFormation").value;
   t.colors={shirt:$("cShirt").value,shorts:$("cShorts").value,number:$("cNum").value};
   t.players.slice(0,11).forEach((p,i)=>{ p.num=+$("en"+i).value||p.num; p.name=$("em"+i).value.trim()||p.name; p.pos=$("ep"+i).value.trim()||p.pos; });
   persist(); applyTeam(); toast("Сақталды ✓"); };
@@ -765,6 +800,7 @@ function sunInfo(month,hour){ // Орал: 51.2° N, 51.4° E, уақыт UTC+5
   const alt=Math.asin(Math.sin(lat)*Math.sin(decl)+Math.cos(lat)*Math.cos(decl)*Math.cos(H));
   const A=Math.atan2(Math.sin(H), Math.cos(H)*Math.sin(lat)-Math.tan(decl)*Math.cos(lat)); // from south, + towards west
   const dir=new THREE.Vector3(-Math.sin(A)*Math.cos(alt), Math.sin(alt), Math.cos(A)*Math.cos(alt)); // north = -z, east = +x
+  dir.applyAxisAngle(new THREE.Vector3(0,1,0), -30*D2R);   // model north (-z) = true bearing 330°
   return { alt:alt/D2R, dir };
 }
 const hhmm=h=>String(Math.floor(h)).padStart(2,"0")+":"+(h%1?"30":"00");
@@ -801,7 +837,7 @@ function applyWeather(){
   const lights = alt<4 || (cl>=.7 && alt<14);
   floods.forEach(f=>f.intensity=lights?(day>.5?.3:1.1):0); floodHeads.forEach(m=>m.emissiveIntensity=lights?2.5:.2);
   rain.visible=W.kind==="rain"; snow.visible=W.kind==="snow";
-  const wet=W.kind==="rain"; pitch.material.roughness=wet?.7:.9; pitch.material.color.set(wet?"#d6e3d4":"#ffffff"); track.material.color.set(wet?"#8e3f2e":"#b4513a");
+  const wet=W.kind==="rain"; pitch.material.roughness=wet?.7:.9; pitch.material.color.set(wet?"#d6e3d4":"#ffffff"); track.material.color.set(wet?"#7d3e33":"#a3584a");
   ground.material.map = W.kind==="snow"?null:groundMap; ground.material.color.set(W.kind==="snow"?"#eef3f7":"#ffffff"); ground.material.needsUpdate=true;
   apron.material.color.set(W.kind==="snow"?"#dfe5ea":wet?"#6c706a":"#8d9188");
   renderer.toneMappingExposure = day<.3 ? 1.1 : 1;
