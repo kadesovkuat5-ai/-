@@ -23,3 +23,13 @@ When the user sends raw footage:
 - Only use sound effects from `reelkit/sfx/` (Pixabay licence) or files the user provides.
 - The Whisper model downloads from huggingface.co. `HF_HUB_DISABLE_XET=1` is set inside the script.
 - `input/`, `work/` and `output/` are git-ignored. Do not commit footage.
+
+## Second project: 3D stadium site (`stadium/index.html`)
+- A 3D model of the Petr Atoyan stadium in Oral (FC Akzhayik). The user calls it "Ақжайық стадионы".
+- Published artifact (keep this URL; republish the same file to update it): https://claude.ai/artifact/Ub17nSmbhQAcc51taNrRoC
+- Features: pick a seat (stand/sector/row/seat) and view from it; squad with best seat and best angle per player;
+  weather and time of day (sun position for Oral); team and player editor; rotate pad.
+- Built from Yandex satellite imagery and photos (org id 192281300613, point 51.351037 E, 51.212237 N).
+  The pitch axis points to about 330°.
+- Still approximate: row and seat counts, sector names, and the look of the west stand. Ask the user for a real ticket or photos.
+- Test locally with Playwright by routing the jsdelivr three.min.js request to `npm pack three@0.147.0`, because jsdelivr is blocked here.
