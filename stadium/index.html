@@ -1,0 +1,718 @@
+<title>Ақжайық стадионы 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: full-bleed 3D stadium, floating glass panel (right on desktop, bottom sheet on phone). Single night look. */
+:root{
+  --ink:#0b1410;        /* night ground */
+  --glass:rgba(12,22,18,.82);
+  --line:rgba(190,230,205,.14);
+  --fg:#eef6f0;
+  --muted:#9fb5a8;
+  --accent:#3fd17a;     /* pitch green */
+  --gold:#ffd24a;       /* selected seat */
+  --danger:#ff7a6b;
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{background:var(--ink);color:var(--fg);font-family:var(--f-body);font-size:14px;overflow:hidden}
+#stage{position:fixed;inset:0;touch-action:none}
+#stage canvas{display:block;width:100%;height:100%}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* Top bar */
+.top{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:12px;
+  padding:calc(env(safe-area-inset-top,0px) + 12px) max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));
+  pointer-events:none;background:linear-gradient(rgba(5,10,8,.7),rgba(5,10,8,0))}
+.crest{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font:800 11px var(--f-display);letter-spacing:.02em;
+  border:2px solid rgba(255,255,255,.8);flex:none;box-shadow:0 4px 18px rgba(0,0,0,.4)}
+.brand{min-width:0}
+.brand h1{margin:0;font:800 clamp(15px,2.4vw,20px)/1.1 var(--f-display);letter-spacing:.01em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .sp{flex:1}
+.pill{pointer-events:auto;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-radius:999px;padding:8px 14px;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.pill:hover{border-color:rgba(255,255,255,.35)}
+
+/* Panel */
+.panel{position:fixed;right:max(16px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 76px);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
+  width:370px;display:flex;flex-direction:column;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.handle{display:none}
+.tabs{display:flex;gap:4px;padding:8px;border-bottom:1px solid var(--line)}
+.tab{flex:1;border:0;background:transparent;border-radius:10px;padding:9px 6px;font-weight:600;color:var(--muted)}
+.tab[aria-selected="true"]{background:rgba(63,209,122,.16);color:var(--fg)}
+.body{flex:1;overflow:auto;padding:14px 16px 18px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+h2{margin:0;font:700 15px/1.25 var(--f-display);text-wrap:balance}
+.hint{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+.grid4{display:grid;grid-template-columns:1.3fr 1fr .8fr .8fr;gap:8px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field input,.field select,.inp{width:100%;min-width:0;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:15px}
+.field select option{background:#14201b}
+.btn{border:0;border-radius:12px;padding:12px 14px;font-weight:700;background:var(--accent);color:#04140a;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.ghost{background:rgba(255,255,255,.08);color:var(--fg);border:1px solid var(--line);font-weight:600}
+.btn.small{padding:8px 10px;font-size:13px;border-radius:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>.btn{flex:1 1 auto}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:rgba(255,255,255,.05);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:rgba(63,209,122,.15)}
+.card{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:rgba(255,255,255,.04);display:flex;flex-direction:column;gap:10px}
+.ticket{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.ticket div{background:rgba(255,255,255,.05);border-radius:10px;padding:8px 4px}
+.ticket b{display:block;font:800 20px var(--f-display);font-variant-numeric:tabular-nums}
+.ticket span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:13px}
+.facts dt{color:var(--muted)}.facts dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+.stars{color:var(--gold);letter-spacing:2px}
+.plist{display:flex;flex-direction:column;gap:4px}
+.pl{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;border:1px solid transparent;background:transparent;text-align:left;width:100%}
+.pl:hover{background:rgba(255,255,255,.05)}
+.pl[aria-pressed="true"]{border-color:var(--accent);background:rgba(63,209,122,.12)}
+.num{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font:800 14px var(--f-display);font-variant-numeric:tabular-nums}
+.pl .nm{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl .ps{font-size:12px;color:var(--muted)}
+.edrow{display:grid;grid-template-columns:54px 1fr 70px;gap:6px}
+.colors{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.colors input[type=color]{height:40px;padding:3px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 24px);background:#f2fff6;color:#06210f;padding:10px 16px;border-radius:12px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:30}
+
+/* Seat-view overlay */
+.seatbar{position:fixed;left:max(16px,env(safe-area-inset-left,0px));top:calc(env(safe-area-inset-top,0px) + 76px);display:flex;flex-direction:column;gap:8px;max-width:min(420px,calc(100% - 420px))}
+.seatbar .pill{align-self:flex-start}
+.seatbar .where{font:700 13px var(--f-body)}
+.zoom{pointer-events:auto;display:flex;align-items:center;gap:10px;background:var(--glass);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;align-self:flex-start}
+.zoom input{width:130px;accent-color:var(--accent)}
+.compass{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 16px);font-size:12px;color:var(--muted);pointer-events:none}
+.loading{position:fixed;inset:0;display:grid;place-items:center;font:700 16px var(--f-display);color:var(--muted)}
+
+@media (max-width:760px){
+  .panel{left:0;right:0;top:auto;bottom:0;width:auto;max-height:48vh;border-radius:18px 18px 0 0;border-bottom:0;
+    padding-bottom:env(safe-area-inset-bottom,0px);transition:max-height .25s ease}
+  .panel.min{max-height:calc(env(safe-area-inset-bottom,0px) + 104px)}
+  .handle{display:block;border:0;background:transparent;padding:8px 0 0;width:100%}
+  .handle::before{content:"";display:block;width:44px;height:5px;border-radius:3px;background:rgba(255,255,255,.3);margin:0 auto}
+  .tabs{padding-top:4px}
+  .body{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .seatbar{max-width:calc(100% - 32px)}
+  .grid4{grid-template-columns:1fr 1fr}
+  .top .pill .t{display:none}
+  .compass{display:none}
+}
+@media (prefers-reduced-motion:reduce){.panel{transition:none}}
+</style>
+
+<div id="stage"></div>
+<div class="loading" id="loading">Стадион жүктелуде…</div>
+
+<header class="top">
+  <div class="crest" id="crest">АҚЖ</div>
+  <div class="brand"><h1 id="teamTitle">Ақжайық</h1><p id="stadTitle">Ақжайық стадионы · Орал</p></div>
+  <div class="sp"></div>
+  <button class="pill" id="btnNight" type="button" aria-pressed="false">🌙 <span class="t">Кешкі матч</span></button>
+</header>
+
+<div class="seatbar" id="seatbar" hidden>
+  <button class="pill" id="btnBack" type="button">← Стадионға қайту</button>
+  <div class="pill where" id="seatWhere"></div>
+  <label class="zoom" for="zoomRange">🔭 Дүрбі <input id="zoomRange" type="range" min="15" max="75" value="58"></label>
+</div>
+<div class="compass" id="compass">Сүйреп айналдырыңыз · Орындыққа басыңыз · Ойыншыға басыңыз</div>
+
+<aside class="panel" id="panel">
+  <button class="handle" id="handle" type="button" aria-label="Панельді ашу/жабу"></button>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-seat" aria-selected="true" type="button">🎟 Орын</button>
+    <button class="tab" role="tab" id="tab-team" aria-selected="false" type="button">👕 Құрам</button>
+    <button class="tab" role="tab" id="tab-edit" aria-selected="false" type="button">✏️ Өңдеу</button>
+  </div>
+
+  <div class="body" id="pane-seat">
+    <div class="chips" id="viewChips">
+      <button class="chip" type="button" data-view="overview" aria-pressed="true">Жалпы көрініс</button>
+      <button class="chip" type="button" data-view="top">Жоғарыдан</button>
+      <button class="chip" type="button" data-view="goal">Қақпа артынан</button>
+      <button class="chip" type="button" data-view="tv">ТВ ракурс</button>
+    </div>
+    <div>
+      <h2>Билеттегі орынды жазыңыз</h2>
+      <p class="hint">Трибуна, сектор, қатар және орын нөмірін таңдаңыз. Немесе 3D стадиондағы кез келген орындыққа басыңыз.</p>
+    </div>
+    <div class="grid4">
+      <div class="field"><label class="lbl" for="fStand">Трибуна</label><select id="fStand"></select></div>
+      <div class="field"><label class="lbl" for="fSector">Сектор</label><select id="fSector"></select></div>
+      <div class="field"><label class="lbl" for="fRow">Қатар</label><input id="fRow" type="number" inputmode="numeric" min="1" value="4"></div>
+      <div class="field"><label class="lbl" for="fSeat">Орын</label><input id="fSeat" type="number" inputmode="numeric" min="1" value="31"></div>
+    </div>
+    <button class="btn" id="btnGo" type="button">👀 Осы орыннан қарау</button>
+    <div class="card" id="seatCard" hidden></div>
+  </div>
+
+  <div class="body" id="pane-team" hidden>
+    <div class="field"><label class="lbl" for="fTeam">Команда</label><select id="fTeam"></select></div>
+    <div class="card" id="playerCard" hidden></div>
+    <div><h2 id="squadTitle">Негізгі құрам</h2><p class="hint">Ойыншыны басыңыз: оны қай орыннан және қай ракурстан көрген әдемі екенін көрсетеміз.</p></div>
+    <div class="plist" id="plist"></div>
+  </div>
+
+  <div class="body" id="pane-edit" hidden>
+    <p class="hint">Мұнда команданың атын, түсін және ойыншылардың аттарын өзгертесіз. «Сақтау» басқанда стадион бірден жаңарады.</p>
+    <div class="field"><label class="lbl" for="eName">Команда аты</label><input class="inp" id="eName"></div>
+    <div class="row">
+      <div class="field" style="flex:1"><label class="lbl" for="eShort">Қысқаша (3 әріп)</label><input class="inp" id="eShort" maxlength="4"></div>
+      <div class="field" style="flex:1"><label class="lbl" for="eCity">Қала</label><input class="inp" id="eCity"></div>
+    </div>
+    <div class="field"><label class="lbl" for="eStadium">Стадион аты</label><input class="inp" id="eStadium"></div>
+    <div class="field"><label class="lbl" for="eFormation">Схема</label><select id="eFormation"></select></div>
+    <div>
+      <span class="lbl">Түстер</span>
+      <div class="colors" style="margin-top:6px">
+        <label class="field"><span class="hint">Футболка</span><input class="inp" id="cShirt" type="color"></label>
+        <label class="field"><span class="hint">Шорты</span><input class="inp" id="cShorts" type="color"></label>
+        <label class="field"><span class="hint">Нөмір</span><input class="inp" id="cNum" type="color"></label>
+      </div>
+    </div>
+    <div><span class="lbl">Ойыншылар (нөмір · аты · позиция)</span></div>
+    <div id="eplayers" style="display:flex;flex-direction:column;gap:6px"></div>
+    <div class="row">
+      <button class="btn" id="btnSave" type="button">💾 Сақтау</button>
+      <button class="btn ghost" id="btnNewTeam" type="button">＋ Жаңа команда</button>
+    </div>
+    <div class="row">
+      <button class="btn ghost small" id="btnCopy" type="button">Деректі көшіру (JSON)</button>
+      <button class="btn ghost small" id="btnReset" type="button">Бастапқы қалпына</button>
+    </div>
+    <textarea id="jsonOut" class="inp" rows="4" hidden readonly style="font:12px ui-monospace,monospace"></textarea>
+  </div>
+</aside>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script>
+/* =====================================================================
+   БАПТАУЛАР (настройки). Командаларды, ойыншыларды осы жерде өзгертуге
+   немесе сайттағы «Өңдеу» бөлімінде жазуға болады.
+   ===================================================================== */
+const DEFAULT_DATA = {
+  stadium: { name: "Ақжайық стадионы", city: "Орал" },
+  active: 0,
+  teams: [
+    { name: "Ақжайық", short: "АҚЖ", city: "Орал", formation: "4-3-3",
+      colors: { shirt: "#1d7a43", shorts: "#ffffff", number: "#ffffff" },
+      players: [
+        { num: 1,  name: "Ойыншы 1",  pos: "ҚҚ" },
+        { num: 2,  name: "Ойыншы 2",  pos: "ҚОР" },
+        { num: 4,  name: "Ойыншы 4",  pos: "ҚОР" },
+        { num: 5,  name: "Ойыншы 5",  pos: "ҚОР" },
+        { num: 3,  name: "Ойыншы 3",  pos: "ҚОР" },
+        { num: 6,  name: "Ойыншы 6",  pos: "ЖАРТ" },
+        { num: 8,  name: "Ойыншы 8",  pos: "ЖАРТ" },
+        { num: 10, name: "Ойыншы 10", pos: "ЖАРТ" },
+        { num: 7,  name: "Ойыншы 7",  pos: "ШАБ" },
+        { num: 9,  name: "Ойыншы 9",  pos: "ШАБ" },
+        { num: 11, name: "Ойыншы 11", pos: "ШАБ" }
+      ] },
+    { name: "Қонақ команда", short: "ҚОН", city: "Қала", formation: "4-4-2",
+      colors: { shirt: "#c8202f", shorts: "#1b1b1b", number: "#ffffff" },
+      players: Array.from({length:11},(_,i)=>({num:i+1,name:"Ойыншы "+(i+1),pos:i===0?"ҚҚ":i<5?"ҚОР":i<9?"ЖАРТ":"ШАБ"})) }
+  ]
+};
+/* Схемалар: x = −1 (сол жақ) … 1 (оң жақ), y = 0 (өз қақпасы) … 1 (қарсылас қақпасы) */
+const FORMATIONS = {
+  "4-3-3":   [[0,.03],[-.8,.24],[-.28,.18],[.28,.18],[.8,.24],[0,.36],[-.45,.44],[.45,.44],[-.75,.66],[0,.72],[.75,.66]],
+  "4-4-2":   [[0,.03],[-.8,.24],[-.28,.18],[.28,.18],[.8,.24],[-.8,.46],[-.27,.40],[.27,.40],[.8,.46],[-.25,.68],[.25,.68]],
+  "4-2-3-1": [[0,.03],[-.8,.24],[-.28,.18],[.28,.18],[.8,.24],[-.27,.36],[.27,.36],[-.72,.56],[0,.54],[.72,.56],[0,.74]],
+  "3-5-2":   [[0,.03],[-.5,.2],[0,.17],[.5,.2],[-.88,.44],[-.35,.36],[0,.46],[.35,.36],[.88,.44],[-.25,.7],[.25,.7]]
+};
+/* Трибуналар (шамамен модель, нақты сызба емес) */
+const STANDS = [
+  { id:"W", name:"Батыс (шатырлы)", letter:"A", side:-1, rows:20, roof:true },
+  { id:"E", name:"Шығыс",           letter:"B", side: 1, rows:16, roof:false }
+];
+const SECTORS = 6, SEATS = 34, SEAT_W = .5, AISLE = 1.2, ROW_D = .85, ROW_H = .45, FRONT = 48.5;
+
+/* ---------------- Data store (localStorage is only a convenience) ---------------- */
+const KEY = "stadium3d.v1";
+let DATA;
+try { DATA = JSON.parse(localStorage.getItem(KEY)) } catch(e) {}
+if (!DATA || !DATA.teams) DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
+const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(DATA)) } catch(e) {} };
+const team = () => DATA.teams[DATA.active] || DATA.teams[0];
+
+const $ = s => document.getElementById(s);
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2200); }
+
+if (!window.THREE) { $("loading").textContent = "3D кітапхана жүктелмеді. Интернетті тексеріп, бетті жаңартыңыз."; throw new Error("no three"); }
+
+/* ---------------- Renderer / scene ---------------- */
+const stage = $("stage");
+const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:"high-performance" });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, 1, .1, 2000);
+const MAXANISO = renderer.capabilities.getMaxAnisotropy();
+
+function mat(color, o={}){ return new THREE.MeshStandardMaterial(Object.assign({ color, roughness:.85, metalness:0 }, o)); }
+function box(w,h,d,m,x,y,z,cast=true,recv=true){ const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); b.position.set(x,y,z); b.castShadow=cast; b.receiveShadow=recv; scene.add(b); return b; }
+function canvasTex(w,h,draw,repeat){ const c=document.createElement("canvas"); c.width=w; c.height=h; draw(c.getContext("2d"),w,h);
+  const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.anisotropy=MAXANISO; if(repeat){t.wrapS=t.wrapT=THREE.RepeatWrapping} return t; }
+
+/* Sky dome */
+const skyU = { top:{value:new THREE.Color("#2f6fb5")}, bottom:{value:new THREE.Color("#d9ecf5")} };
+const sky = new THREE.Mesh(new THREE.SphereGeometry(900,32,16), new THREE.ShaderMaterial({ side:THREE.BackSide, depthWrite:false, uniforms:skyU,
+  vertexShader:"varying vec3 p;void main(){p=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",
+  fragmentShader:"uniform vec3 top;uniform vec3 bottom;varying vec3 p;void main(){float h=clamp(p.y*1.6,0.,1.);gl_FragColor=vec4(mix(bottom,top,pow(h,.7)),1.);}" }));
+scene.add(sky);
+scene.fog = new THREE.Fog("#cfe3ee", 260, 900);
+
+const hemi = new THREE.HemisphereLight("#dff1ff", "#4a5a3a", .75); scene.add(hemi);
+const sun = new THREE.DirectionalLight("#fff4e0", 2.1);
+sun.position.set(-90, 140, 60); sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera, { left:-110, right:110, top:110, bottom:-110, near:10, far:400 });
+sun.shadow.bias = -.0004; sun.shadow.normalBias = .04;
+scene.add(sun);
+
+/* Ground around stadium */
+const groundTex = canvasTex(256,256,(g,w,h)=>{ g.fillStyle="#6b7d4c"; g.fillRect(0,0,w,h); for(let i=0;i<2500;i++){ g.fillStyle=`rgba(${40+Math.random()*40|0},${60+Math.random()*40|0},${30+Math.random()*20|0},.35)`; g.fillRect(Math.random()*w,Math.random()*h,2,2);} }, true);
+groundTex.repeat.set(60,60);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(1800,1800), mat("#ffffff",{map:groundTex}));
+ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; scene.add(ground);
+
+/* Stadium-shaped paths for track */
+function stadiumPath(r, L, P){ const p = P || new THREE.Shape();
+  p.moveTo(r,-L/2); p.lineTo(r,L/2); p.absarc(0,L/2,r,0,Math.PI,false); p.lineTo(-r,-L/2); p.absarc(0,-L/2,r,Math.PI,Math.PI*2,false); return p; }
+const TR_IN = 36.5, TR_OUT = 46.3, TR_L = 84.39;
+// Concrete apron
+const apron = new THREE.Mesh(new THREE.PlaneGeometry(140,150), mat("#8d9188")); apron.rotation.x=-Math.PI/2; apron.position.y=.01; apron.receiveShadow=true; scene.add(apron);
+// Track
+const trackShape = stadiumPath(TR_OUT, TR_L); trackShape.holes.push(stadiumPath(TR_IN, TR_L, new THREE.Path()));
+const track = new THREE.Mesh(new THREE.ShapeGeometry(trackShape, 48), mat("#b4513a",{roughness:.95}));
+track.rotation.x = -Math.PI/2; track.position.y = .03; track.receiveShadow = true; scene.add(track);
+for (let i=1;i<8;i++){ const r=TR_IN+i*(TR_OUT-TR_IN)/8; const pts=stadiumPath(r,TR_L,new THREE.Path()).getPoints(48).map(p=>new THREE.Vector3(p.x,.05,-p.y));
+  scene.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({color:"#efe3dc",transparent:true,opacity:.55}))); }
+// Infield grass
+const infield = new THREE.Mesh(new THREE.ShapeGeometry(stadiumPath(TR_IN,TR_L),48), mat("#3f7a34"));
+infield.rotation.x=-Math.PI/2; infield.position.y=.035; infield.receiveShadow=true; scene.add(infield);
+
+/* Pitch texture: 105 x 68 m, drawn at 16 px per metre */
+const PW = 106, PH = 69.6, PX = 16;
+const pitchTex = canvasTex(PH*PX|0, PW*PX|0, (g,w,h)=>{
+  const m = v => v*PX, ox = (PH-68)/2, oy = (PW-105)/2;
+  for (let i=0;i<14;i++){ g.fillStyle = i%2 ? "#3f8f3a" : "#4a9c43"; g.fillRect(0, i*h/14, w, h/14+1); }
+  for (let i=0;i<9000;i++){ g.fillStyle=`rgba(${20+Math.random()*30|0},${70+Math.random()*50|0},${20+Math.random()*20|0},.18)`; g.fillRect(Math.random()*w,Math.random()*h,2,3); }
+  g.strokeStyle="rgba(255,255,255,.92)"; g.lineWidth=m(.12)*1.6; g.fillStyle="rgba(255,255,255,.92)";
+  const L=(x,y,ww,hh)=>g.strokeRect(m(ox+x),m(oy+y),m(ww),m(hh));
+  L(0,0,68,105); g.beginPath(); g.moveTo(m(ox),m(oy+52.5)); g.lineTo(m(ox+68),m(oy+52.5)); g.stroke();
+  const arc=(x,y,r,a0,a1)=>{g.beginPath();g.arc(m(ox+x),m(oy+y),m(r),a0,a1);g.stroke();};
+  const dot=(x,y,r)=>{g.beginPath();g.arc(m(ox+x),m(oy+y),m(r),0,7);g.fill();};
+  arc(34,52.5,9.15,0,7); dot(34,52.5,.25);
+  for (const end of [0,1]){ const y0 = end? 105-16.5 : 0, g0 = end? 105-5.5 : 0, sp = end? 105-11 : 11;
+    L(34-20.16,y0,40.32,16.5); L(34-9.16,g0,18.32,5.5); dot(34,sp,.22);
+    const a = Math.acos(5.5/9.15); end ? arc(34,sp,9.15,-Math.PI/2-a,-Math.PI/2+a) : arc(34,sp,9.15,Math.PI/2-a,Math.PI/2+a); }
+  for (const [x,y,a0] of [[0,0,0],[68,0,Math.PI/2],[68,105,Math.PI],[0,105,-Math.PI/2]]) arc(x,y,1,a0,a0+Math.PI/2);
+});
+const pitch = new THREE.Mesh(new THREE.PlaneGeometry(PH, PW), mat("#ffffff",{map:pitchTex,roughness:.9}));
+pitch.rotation.x=-Math.PI/2; pitch.position.y=.045; pitch.receiveShadow=true; scene.add(pitch);
+
+/* Goals with nets */
+const white = mat("#ffffff",{roughness:.4});
+const netTex = canvasTex(64,64,(g,w,h)=>{ g.clearRect(0,0,w,h); g.strokeStyle="rgba(255,255,255,.85)"; g.lineWidth=3; g.strokeRect(0,0,w,h); }, true);
+const netMat = new THREE.MeshStandardMaterial({ map:netTex, transparent:true, side:THREE.DoubleSide, depthWrite:false, roughness:1 });
+function goal(zSign){
+  const z = zSign*52.5, gw=7.32, gh=2.44, d=2;
+  const post=(x,y,zz,l,rotZ,rotX)=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,l,10),white);c.position.set(x,y,zz);if(rotZ)c.rotation.z=rotZ;if(rotX)c.rotation.x=rotX;c.castShadow=true;scene.add(c);};
+  post(-gw/2,gh/2,z,gh); post(gw/2,gh/2,z,gh); post(0,gh,z,gw,Math.PI/2);
+  const plane=(w,h,x,y,zz,ry,rx)=>{const t=netTex.clone(); t.needsUpdate=true; t.repeat.set(w/.15,h/.15); const m=netMat.clone(); m.map=t;
+    const p=new THREE.Mesh(new THREE.PlaneGeometry(w,h),m); p.position.set(x,y,zz); p.rotation.set(rx||0,ry||0,0); scene.add(p);};
+  plane(gw,gh,0,gh/2,z+zSign*d,0); plane(gw,d,0,gh,z+zSign*d/2,0,Math.PI/2); plane(d,gh,-gw/2,gh/2,z+zSign*d/2,Math.PI/2); plane(d,gh,gw/2,gh/2,z+zSign*d/2,Math.PI/2);
+}
+goal(-1); goal(1);
+for (const [x,z] of [[-34,-52.5],[34,-52.5],[34,52.5],[-34,52.5]]){ const p=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,1.5,6),white); p.position.set(x,.75,z); scene.add(p);
+  const f=new THREE.Mesh(new THREE.PlaneGeometry(.45,.32),mat("#ffcc00",{side:THREE.DoubleSide})); f.position.set(x+.23,1.3,z); scene.add(f); }
+
+/* Advertising boards along both straights */
+let boardMats = [];
+function boardTexture(){ const t=team(); return canvasTex(2048,96,(g,w,h)=>{ g.fillStyle=t.colors.shirt; g.fillRect(0,0,w,h);
+  g.font="800 52px Unbounded, Arial Black, sans-serif"; g.textBaseline="middle"; g.fillStyle=t.colors.number;
+  const txt=`${t.name.toUpperCase()}  •  ${(t.city||"").toUpperCase()}  •  `; let x=20; while(x<w){ g.fillText(txt,x,h/2+2); x+=g.measureText(txt).width; } }); }
+for (const s of [-1,1]){ const m=mat("#ffffff",{emissive:"#ffffff",emissiveIntensity:.15,roughness:.5}); boardMats.push(m);
+  const b=new THREE.Mesh(new THREE.BoxGeometry(.15,1,100),[mat("#222"),m,mat("#222"),mat("#222"),mat("#222"),mat("#222")]);
+  if (s>0){ b.material=[m,mat("#222"),mat("#222"),mat("#222"),mat("#222"),mat("#222")]; }
+  b.position.set(s*(TR_OUT+.9),.5,0); b.castShadow=true; scene.add(b); }
+
+/* ---------------- Stands + seats ---------------- */
+const concrete = mat("#b9b8b1"), concreteDark = mat("#8e8d87"), steel = mat("#5b6168",{metalness:.5,roughness:.5});
+const sectorLen = SEATS*SEAT_W, standLen = SECTORS*sectorLen + (SECTORS-1)*AISLE;
+const SEATLIST = [];   // index -> {stand, sector, row, seat, pos:Vector3, facing}
+function seatZ(stand, sector, seat){ // numbering goes left -> right as the spectator faces the pitch
+  const k = (sector-1)*(sectorLen+AISLE) + (seat-.5)*SEAT_W - standLen/2;
+  return stand.side>0 ? -k : k;
+}
+for (const st of STANDS){
+  const s = st.side, depth = st.rows*ROW_D + 1.2;
+  for (let r=1;r<=st.rows;r++){ const h = 1.6+(r-1)*ROW_H, d = 1+(r-1)*ROW_D;
+    box(ROW_D, h, standLen+2, r%2?concrete:concreteDark, s*(FRONT+d), h/2, 0, false, true); }
+  const topH = 1.6+(st.rows-1)*ROW_H, backX = s*(FRONT+depth);
+  box(1.2,1.4,standLen+2,concrete, s*(FRONT+.1), .7, 0);                         // front wall
+  box(.4, topH+(st.roof?7:1.4), standLen+2, concreteDark, backX, (topH+(st.roof?7:1.4))/2, 0); // back wall
+  for (const e of [-1,1]) box(depth, topH+1, .4, concreteDark, s*(FRONT+depth/2), (topH+1)/2, e*(standLen/2+1));
+  // aisles: lighter stair strips
+  for (let k=1;k<SECTORS;k++){ const z = k*(sectorLen+AISLE)-AISLE/2-standLen/2;
+    for (let r=1;r<=st.rows;r++){ const h=1.6+(r-1)*ROW_H, d=1+(r-1)*ROW_D; box(ROW_D,.02,AISLE,mat("#d8d6cf"),s*(FRONT+d),h+.01,z,false,true); } }
+  for (let sec=1;sec<=SECTORS;sec++) for (let r=1;r<=st.rows;r++) for (let n=1;n<=SEATS;n++){
+    const h = 1.6+(r-1)*ROW_H, d = 1+(r-1)*ROW_D;
+    SEATLIST.push({ stand:st, sector:sec, row:r, seat:n, pos:new THREE.Vector3(s*(FRONT+d), h, seatZ(st,sec,n)) });
+  }
+  if (st.roof){ // cantilever roof over main stand
+    const rx0 = FRONT-1.5, rx1 = FRONT+depth+1.5, y0 = topH+8.5, y1 = topH+6.2, w = rx1-rx0;
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(Math.hypot(w,y0-y1),.35,standLen+6), mat("#dfe3e6",{metalness:.3,roughness:.45}));
+    roof.position.set(s*(rx0+rx1)/2,(y0+y1)/2,0); roof.rotation.z = s*Math.atan2(y0-y1,w)*-1; roof.castShadow=true; roof.receiveShadow=true; scene.add(roof);
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(.5,1.1,standLen+6), mat(team().colors.shirt)); rail.position.set(s*rx0,y0-.4,0); scene.add(rail); rail.userData.teamColor=true;
+    for (let z=-standLen/2; z<=standLen/2+.1; z+=standLen/6){
+      box(.5,y1+.3,.5,steel,s*(rx1-.8),(y1+.3)/2,z);
+      const tr=new THREE.Mesh(new THREE.BoxGeometry(w,.3,.3),steel); tr.position.set(s*(rx0+rx1)/2,(y0+y1)/2-.4,z); tr.rotation.z=roof.rotation.z; scene.add(tr);
+    }
+    // glazed VIP strip behind last row
+    const vip = new THREE.Mesh(new THREE.BoxGeometry(.3,1.6,standLen*.5), mat("#9fd3ff",{emissive:"#3a7fb3",emissiveIntensity:.25,metalness:.6,roughness:.15}));
+    vip.position.set(backX - s*.25, topH+2.4, 0); scene.add(vip);
+  }
+}
+// One merged seat geometry, drawn as a single InstancedMesh
+function merge(geos){ let n=0; const parts=geos.map(g=>{g=g.toNonIndexed(); n+=g.attributes.position.count; return g;});
+  const pos=new Float32Array(n*3), nor=new Float32Array(n*3); let o=0;
+  for (const g of parts){ pos.set(g.attributes.position.array,o*3); nor.set(g.attributes.normal.array,o*3); o+=g.attributes.position.count; }
+  const out=new THREE.BufferGeometry(); out.setAttribute("position",new THREE.BufferAttribute(pos,3)); out.setAttribute("normal",new THREE.BufferAttribute(nor,3)); out.computeBoundingSphere(); return out; }
+const gBase = new THREE.BoxGeometry(.44,.08,.4).translate(0,.42,.05);
+const gBack = new THREE.BoxGeometry(.44,.42,.06).translate(0,.62,-.17);
+const gLeg  = new THREE.BoxGeometry(.3,.38,.08).translate(0,.19,0);
+const seatGeo = merge([gBase,gBack,gLeg]);
+const seats = new THREE.InstancedMesh(seatGeo, mat("#ffffff",{roughness:.55}), SEATLIST.length);
+seats.castShadow = true; seats.receiveShadow = true;
+{ const o = new THREE.Object3D();
+  SEATLIST.forEach((s,i)=>{ o.position.copy(s.pos); o.rotation.set(0, s.stand.side>0 ? -Math.PI/2 : Math.PI/2, 0); o.updateMatrix(); seats.setMatrixAt(i,o.matrix); }); }
+scene.add(seats);
+let selectedSeat = -1;
+function seatColor(s){ const t=team(); const c=new THREE.Color(t.colors.shirt);
+  // stripe pattern: club colour with lighter band rows 7-8 and shorts-colour sector edges
+  if (s.row===7||s.row===8) c.lerp(new THREE.Color(t.colors.shorts),.85);
+  else if (s.seat<=2||s.seat>=SEATS-1) c.lerp(new THREE.Color("#ffffff"),.25);
+  return c; }
+function paintSeats(){ SEATLIST.forEach((s,i)=>seats.setColorAt(i, i===selectedSeat ? new THREE.Color("#ffd24a") : seatColor(s))); seats.instanceColor.needsUpdate=true; }
+paintSeats();
+// selected-seat marker
+const marker = new THREE.Mesh(new THREE.ConeGeometry(.35,.9,16), new THREE.MeshBasicMaterial({color:"#ffd24a"}));
+marker.rotation.x = Math.PI; marker.visible=false; scene.add(marker);
+
+/* Curves behind the goals: grass banks with low terrace */
+for (const zs of [-1,1]){ const bank=new THREE.Mesh(new THREE.CylinderGeometry(TR_OUT+16,TR_OUT+6,4,40,1,true,zs>0?-Math.PI/2:Math.PI/2,Math.PI), mat("#5d7b45",{side:THREE.DoubleSide}));
+  bank.position.set(0,2,zs*TR_L/2); bank.receiveShadow=true; scene.add(bank); }
+
+/* Scoreboard at south end */
+let scoreMat = mat("#ffffff",{emissive:"#ffffff",emissiveIntensity:.6});
+function scoreTexture(){ const t=team(); return canvasTex(1024,360,(g,w,h)=>{ g.fillStyle="#05080a"; g.fillRect(0,0,w,h);
+  g.fillStyle=t.colors.shirt; g.fillRect(0,0,w,64); g.fillStyle=t.colors.number; g.font="700 34px Golos Text, sans-serif"; g.textAlign="center"; g.textBaseline="middle";
+  g.fillText((DATA.stadium.name+" · "+DATA.stadium.city).toUpperCase(), w/2, 34);
+  g.fillStyle="#ffffff"; g.font="800 96px Unbounded, Arial Black, sans-serif"; g.fillText(t.short.toUpperCase()+"  0 : 0", w/2, 180);
+  g.fillStyle="#ffd24a"; g.font="700 44px Golos Text, sans-serif"; g.fillText("ҚОШ КЕЛДІҢІЗ!", w/2, 298); }); }
+{ const sb=new THREE.Mesh(new THREE.BoxGeometry(16,5.6,.5),[mat("#222"),mat("#222"),mat("#222"),mat("#222"),scoreMat,mat("#222")]);
+  sb.position.set(0,11,TR_L/2+TR_OUT+8); sb.rotation.y=Math.PI; sb.castShadow=true; scene.add(sb);
+  for (const x of [-5,5]) box(.6,8.5,.6,steel,x,4.25,TR_L/2+TR_OUT+8.4); }
+
+/* Floodlight masts */
+const floods = [], floodHeads = [];
+for (const [x,z] of [[-66,-72],[66,-72],[66,72],[-66,72]]){
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(.5,.9,42,10),steel); m.position.set(x,21,z); m.castShadow=true; scene.add(m);
+  const head=new THREE.Group(); head.position.set(x,43,z); head.lookAt(0,0,0); scene.add(head);
+  const frame=new THREE.Mesh(new THREE.BoxGeometry(9,5,.6),steel); head.add(frame);
+  const lm=new THREE.MeshStandardMaterial({color:"#fffbe8",emissive:"#fff6d6",emissiveIntensity:.2}); floodHeads.push(lm);
+  for (let i=0;i<4;i++) for (let j=0;j<3;j++){ const l=new THREE.Mesh(new THREE.PlaneGeometry(1.6,1.1),lm); l.position.set(-3.3+i*2.2,-1.4+j*1.4,.35); head.add(l); }
+  const sp=new THREE.SpotLight("#fff3dc",0,260,Math.PI/5,.6,1.2); sp.position.set(x,43,z); sp.target.position.set(x*.15,0,z*.15); scene.add(sp,sp.target); floods.push(sp);
+}
+
+/* Trees and city around */
+{ const trunk=mat("#5a4632"), leaf=mat("#3c6b35"), leaf2=mat("#4f7d3a");
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  for (let i=0;i<120;i++){ const a=Math.random()*Math.PI*2, r=rnd(110,200); const x=Math.cos(a)*r*1.1, z=Math.sin(a)*r*1.25; const h=rnd(5,9);
+    const t=new THREE.Mesh(new THREE.CylinderGeometry(.25,.35,h*.4,6),trunk); t.position.set(x,h*.2,z); scene.add(t);
+    const c=new THREE.Mesh(new THREE.SphereGeometry(h*.35,8,6),i%2?leaf:leaf2); c.position.set(x,h*.55,z); c.scale.y=1.3; c.castShadow=true; scene.add(c); }
+  const bm=[mat("#d9cfc0"),mat("#c7ccd3"),mat("#e2d6c2")];
+  for (let i=0;i<46;i++){ const a=Math.random()*Math.PI*2, r=rnd(230,420); const h=rnd(8,34);
+    const b=new THREE.Mesh(new THREE.BoxGeometry(rnd(14,30),h,rnd(12,26)),bm[i%3]); b.position.set(Math.cos(a)*r,h/2,Math.sin(a)*r); b.rotation.y=Math.random()*3; scene.add(b); } }
+
+/* ---------------- Players ---------------- */
+const playersGroup = new THREE.Group(); scene.add(playersGroup);
+let PLAYERS = [];     // {data, group, label, world:Vector3}
+let selectedPlayer = -1;
+function numberTex(num, fg, bg, round){ return canvasTex(128,128,(g,w,h)=>{ if(bg){ g.fillStyle=bg; if(round){g.beginPath();g.arc(64,64,60,0,7);g.fill();g.lineWidth=6;g.strokeStyle=fg;g.stroke();} else g.fillRect(0,0,w,h);}
+  g.fillStyle=fg; g.font="800 "+(String(num).length>1?64:76)+"px Unbounded, Arial Black, sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText(num,64,70); }); }
+function labelTex(p, t){ return canvasTex(512,128,(g,w,h)=>{ g.fillStyle="rgba(8,14,11,.86)"; const r=26; g.beginPath(); g.roundRect ? g.roundRect(4,14,w-8,100,r) : g.rect(4,14,w-8,100); g.fill();
+  g.fillStyle=t.colors.shirt; g.fillRect(16,30,68,68); g.fillStyle=t.colors.number; g.font="800 36px Unbounded, Arial Black, sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText(p.num,50,66);
+  g.textAlign="left"; g.fillStyle="#fff"; g.font="700 38px Golos Text, sans-serif"; g.fillText(p.name,100,56); g.fillStyle="#9fb5a8"; g.font="500 26px Golos Text, sans-serif"; g.fillText(p.pos,100,92); }); }
+function buildPlayer(p, t){
+  const g = new THREE.Group();
+  const shirt=mat(t.colors.shirt,{roughness:.7}), shorts=mat(t.colors.shorts), skin=mat("#d8a57f"), sock=mat(t.colors.shirt), boot=mat("#111");
+  const part=(geo,m,x,y,z)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;g.add(o);return o;};
+  for (const sx of [-.11,.11]){ part(new THREE.CylinderGeometry(.075,.06,.45,8),sock,sx,.27,0); part(new THREE.CylinderGeometry(.085,.075,.35,8),skin,sx,.64,0); part(new THREE.BoxGeometry(.11,.07,.26),boot,sx,.035,.05); }
+  part(new THREE.CylinderGeometry(.2,.19,.26,12),shorts,0,.86,0);
+  part(new THREE.CapsuleGeometry(.2,.36,4,12),shirt,0,1.24,0).scale.set(1.05,1,.7);
+  for (const sx of [-.27,.27]){ const a=part(new THREE.CapsuleGeometry(.055,.42,4,8),shirt,sx,1.2,0); a.rotation.z=sx>0?.12:-.12; }
+  part(new THREE.SphereGeometry(.12,14,12),skin,0,1.66,0);
+  part(new THREE.SphereGeometry(.125,14,12,0,Math.PI*2,0,Math.PI/2),mat("#2a1c14"),0,1.68,-.01);
+  const back=new THREE.Mesh(new THREE.PlaneGeometry(.32,.32),new THREE.MeshBasicMaterial({map:numberTex(p.num,t.colors.number),transparent:true}));
+  back.position.set(0,1.28,-.15); back.rotation.y=Math.PI; g.add(back);
+  const front=back.clone(); front.scale.setScalar(.45); front.position.set(.08,1.38,.15); front.rotation.y=0; g.add(front);
+  const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:numberTex(p.num,t.colors.number,t.colors.shirt,true),depthTest:false}));
+  tag.scale.setScalar(1.5); tag.position.y=2.9; tag.renderOrder=5; g.add(tag);
+  const label=new THREE.Sprite(new THREE.SpriteMaterial({map:labelTex(p,t),depthTest:false})); label.scale.set(4,1,1); label.position.y=3.4; label.visible=false; label.renderOrder=6; g.add(label);
+  const ring=new THREE.Mesh(new THREE.RingGeometry(.55,.7,32),new THREE.MeshBasicMaterial({color:"#ffd24a",transparent:true,opacity:.9})); ring.rotation.x=-Math.PI/2; ring.position.y=.06; ring.visible=false; g.add(ring);
+  return { group:g, tag, label, ring };
+}
+function buildPlayers(){
+  playersGroup.clear(); PLAYERS=[]; selectedPlayer=-1;
+  const t = team(), F = FORMATIONS[t.formation] || FORMATIONS["4-3-3"];
+  t.players.slice(0,11).forEach((p,i)=>{
+    const [fx,fy] = F[i]; const b = buildPlayer(p,t);
+    // team attacks north (-z); left side of the team = west (-x)
+    b.group.position.set(fx*30, .05, 52.5 - fy*105); b.group.rotation.y = Math.PI;   // face -z
+    b.group.userData.player = i; b.group.traverse(o=>o.userData.player=i);
+    playersGroup.add(b.group); PLAYERS.push(Object.assign(b,{data:p}));
+  });
+  const ball=new THREE.Mesh(new THREE.SphereGeometry(.11,16,12),mat("#ffffff",{roughness:.4})); ball.position.set(.3,.16,-.5); ball.castShadow=true; playersGroup.add(ball);
+}
+
+/* ---------------- Camera controller ---------------- */
+const CAM = { pos:new THREE.Vector3(), tgt:new THREE.Vector3(), fov:50, mode:"orbit", tween:null, idle:true };
+function setCam(pos,tgt,fov,mode,dur=1300){
+  CAM.idle=false;
+  if (dur<=0 || matchMedia("(prefers-reduced-motion: reduce)").matches){ CAM.pos.copy(pos); CAM.tgt.copy(tgt); CAM.fov=fov; CAM.mode=mode; CAM.tween=null; return; }
+  CAM.tween = { p0:CAM.pos.clone(), t0:CAM.tgt.clone(), f0:CAM.fov, p1:pos.clone(), t1:tgt.clone(), f1:fov, start:performance.now(), dur, mode };
+  CAM.mode = "tween";
+}
+const ease = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+function stepCam(now){
+  const tw=CAM.tween; if(!tw) return;
+  const k = Math.min(1,(now-tw.start)/tw.dur), e=ease(k);
+  // arc the path upward a little so it doesn't clip through stands
+  CAM.pos.lerpVectors(tw.p0,tw.p1,e); CAM.pos.y += Math.sin(Math.PI*e)*Math.min(30,tw.p0.distanceTo(tw.p1)*.15);
+  CAM.tgt.lerpVectors(tw.t0,tw.t1,e); CAM.fov = tw.f0+(tw.f1-tw.f0)*e;
+  if (k>=1){ CAM.mode=tw.mode; CAM.tween=null; }
+}
+const VIEWS = {
+  overview: ()=>[new THREE.Vector3(118,62,96), new THREE.Vector3(0,0,0), 45],
+  top:      ()=>[new THREE.Vector3(0,165,1), new THREE.Vector3(0,0,0), 45],
+  goal:     ()=>[new THREE.Vector3(0,9,TR_L/2+TR_OUT+2), new THREE.Vector3(0,0,0), 52],
+  tv:       ()=>[new THREE.Vector3(-(FRONT-5),21,0), new THREE.Vector3(0,0,0), 48]
+};
+function goView(name){ const [p,t,f]=VIEWS[name](); exitSeatUI(); setCam(p,t,f,"orbit");
+  document.querySelectorAll("#viewChips .chip").forEach(c=>c.setAttribute("aria-pressed", c.dataset.view===name)); }
+
+/* Input: drag rotates, wheel / pinch zooms, tap picks */
+const ptrs = new Map(); let down=null, pinch0=0;
+const el = renderer.domElement;
+el.addEventListener("pointerdown", e=>{ el.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if (ptrs.size===1) down={x:e.clientX,y:e.clientY,t:performance.now(),moved:false};
+  if (ptrs.size===2){ const [a,b]=[...ptrs.values()]; pinch0=Math.hypot(a.x-b.x,a.y-b.y); down&&(down.moved=true);} CAM.idle=false; });
+el.addEventListener("pointermove", e=>{ const p=ptrs.get(e.pointerId); if(!p) return;
+  const dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY;
+  if (down && Math.hypot(e.clientX-down.x,e.clientY-down.y)>6) down.moved=true;
+  if (CAM.mode==="tween") return;
+  if (ptrs.size===2){ const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); if(pinch0){ zoomBy(pinch0/d); } pinch0=d; return; }
+  rotateBy(dx,dy); });
+const up = e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) pinch0=0;
+  if (down && !down.moved && ptrs.size===0 && performance.now()-down.t<500) pick(e.clientX,e.clientY);
+  if (ptrs.size===0) down=null; };
+el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+el.addEventListener("wheel", e=>{ e.preventDefault(); if(CAM.mode!=="tween") zoomBy(Math.exp(e.deltaY*.0012)); CAM.idle=false; }, {passive:false});
+const sph = new THREE.Spherical(), tmp = new THREE.Vector3();
+function rotateBy(dx,dy){
+  if (CAM.mode==="orbit"){ tmp.subVectors(CAM.pos,CAM.tgt); sph.setFromVector3(tmp);
+    sph.theta -= dx*.006; sph.phi = THREE.MathUtils.clamp(sph.phi - dy*.006, .05, 1.48); tmp.setFromSpherical(sph); CAM.pos.addVectors(CAM.tgt,tmp); }
+  else if (CAM.mode==="look"){ tmp.subVectors(CAM.tgt,CAM.pos); sph.setFromVector3(tmp); const k=CAM.fov/60*.004;
+    sph.theta += dx*k; sph.phi = THREE.MathUtils.clamp(sph.phi + dy*k, .5, 2.4); tmp.setFromSpherical(sph); CAM.tgt.addVectors(CAM.pos,tmp); }
+}
+function zoomBy(f){
+  if (CAM.mode==="orbit"){ tmp.subVectors(CAM.pos,CAM.tgt); const len=THREE.MathUtils.clamp(tmp.length()*f, 4, 320); tmp.setLength(len); CAM.pos.addVectors(CAM.tgt,tmp); if(CAM.pos.y<1.2) CAM.pos.y=1.2; }
+  else if (CAM.mode==="look"){ CAM.fov=THREE.MathUtils.clamp(CAM.fov*f,15,75); $("zoomRange").value=CAM.fov.toFixed(0); }
+}
+$("zoomRange").addEventListener("input", e=>{ if(CAM.mode==="look") CAM.fov=+e.target.value; });
+
+/* ---------------- Picking ---------------- */
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+function pick(x,y){
+  const r=el.getBoundingClientRect(); ndc.set((x-r.left)/r.width*2-1, -(y-r.top)/r.height*2+1); ray.setFromCamera(ndc,camera);
+  const hp = ray.intersectObjects(playersGroup.children,true).find(h=>h.object.userData.player!==undefined);
+  const hs = ray.intersectObject(seats);
+  if (hp && (!hs.length || hp.distance < hs[0].distance)){ selectPlayer(hp.object.userData.player, true); showTab("team"); return; }
+  if (hs.length){ selectSeat(hs[0].instanceId); showTab("seat"); syncForm(); }
+}
+
+/* ---------------- Seat logic ---------------- */
+function seatIndex(standId, sector, row, seat){ return SEATLIST.findIndex(s=>s.stand.id===standId&&s.sector===sector&&s.row===row&&s.seat===seat); }
+function eyeOf(s){ return s.pos.clone().add(new THREE.Vector3(0,1.15,0)); }
+function seatStats(s){
+  const eye=eyeOf(s), dc=Math.hypot(eye.x,eye.z), dTouch=Math.abs(eye.x)-34, elev=Math.atan2(eye.y,dTouch)*180/Math.PI;
+  const along=Math.abs(eye.z);  // 0 = level with halfway line
+  let score = 5 - Math.max(0,along-12)/14 - Math.abs(elev-17)/9 - Math.max(0,dc-60)/12;
+  score = Math.max(1, Math.min(5, Math.round(score*2)/2));
+  const zone = along<14 ? "орта сызық тұсы" : (s.pos.z<0 ? "солтүстік қақпа жағы" : "оңтүстік қақпа жағы");
+  return { dc, dTouch, elev, score, zone };
+}
+function stars(n){ return "★".repeat(Math.floor(n)) + (n%1?"½":"") + "☆".repeat(5-Math.ceil(n)); }
+function seatName(s){ return `${s.stand.letter}${s.sector} сектор · ${s.row}-қатар · ${s.seat}-орын`; }
+function selectSeat(i){
+  selectedSeat=i; paintSeats(); const s=SEATLIST[i];
+  marker.position.copy(s.pos).add(new THREE.Vector3(0,2.2,0)); marker.visible=true;
+  const st=seatStats(s);
+  const c=$("seatCard"); c.hidden=false;
+  c.innerHTML = `<div class="lbl">${s.stand.name} трибуна</div>
+    <div class="ticket"><div><b>${s.stand.letter}${s.sector}</b><span>Сектор</span></div><div><b>${s.row}</b><span>Қатар</span></div><div><b>${s.seat}</b><span>Орын</span></div></div>
+    <dl class="facts">
+      <dt>Көрініс бағасы</dt><dd><span class="stars">${stars(st.score)}</span></dd>
+      <dt>Орталыққа дейін</dt><dd>${st.dc.toFixed(0)} м</dd>
+      <dt>Алаң шетіне дейін</dt><dd>${st.dTouch.toFixed(0)} м</dd>
+      <dt>Қарау бұрышы</dt><dd>${st.elev.toFixed(0)}° жоғарыдан</dd>
+      <dt>Орналасуы</dt><dd>${st.zone}</dd>
+      <dt>Шатыр</dt><dd>${s.stand.roof?"Бар — жаңбыр, күн өтпейді":"Жоқ — ашық аспан"}</dd>
+    </dl>
+    <div class="row"><button class="btn" type="button" id="seatLook">👀 Осы орыннан қарау</button></div>`;
+  $("seatLook").onclick=()=>viewFromSeat(i);
+}
+function viewFromSeat(i, lookAt){
+  if (i<0) return; if (selectedSeat!==i) selectSeat(i);
+  const s=SEATLIST[i]; const eye=eyeOf(s);
+  const tgt = lookAt ? lookAt.clone() : new THREE.Vector3(0,0,s.pos.z*.55);
+  marker.visible=false;
+  setCam(eye,tgt,lookAt?34:58,"look",1700);
+  $("seatWhere").textContent = "📍 "+seatName(s); $("seatbar").hidden=false; $("zoomRange").value = lookAt?34:58;
+  $("compass").textContent="Айналаға қарау үшін сүйреңіз · Дүрбімен жақындатыңыз";
+  if (matchMedia("(max-width:760px)").matches) $("panel").classList.add("min");
+}
+function exitSeatUI(){ $("seatbar").hidden=true; if(selectedSeat>=0) marker.visible=true; $("compass").textContent="Сүйреп айналдырыңыз · Орындыққа басыңыз · Ойыншыға басыңыз"; }
+$("btnBack").onclick=()=>goView("overview");
+
+/* ---------------- Player logic: best seat and best angle ---------------- */
+function bestSeatFor(pl){
+  const P=pl.group.position, fwd=new THREE.Vector3(0,0,-1); let best=-1, bs=1e9;
+  SEATLIST.forEach((s,i)=>{ const e=eyeOf(s); const dx=e.x-P.x, dz=e.z-P.z, hd=Math.hypot(dx,dz); const elev=Math.atan2(e.y-1.2,hd);
+    const front=(dx*fwd.x+dz*fwd.z)/hd;          // >0: the seat sees the player's face side
+    const sc = hd + 55*Math.abs(elev-.3) - 10*Math.max(0,Math.min(front,.75)) + (front<0?8:0);
+    if (sc<bs){ bs=sc; best=i; } });
+  return best;
+}
+function closeUp(pl){ // 3/4 front view, the classic flattering angle
+  const P=pl.group.position.clone(); const side = P.x<0 ? -1 : 1;
+  const dir=new THREE.Vector3(side*Math.sin(.6),0,-Math.cos(.6));   // in front and slightly to the side
+  return [P.clone().add(dir.multiplyScalar(4.2)).setY(1.75), P.clone().setY(1.35), 40];
+}
+function selectPlayer(i, fly){
+  PLAYERS.forEach((p,k)=>{ p.ring.visible=k===i; p.label.visible=k===i; p.tag.visible=k!==i; });
+  selectedPlayer=i; const pl=PLAYERS[i], t=team(); renderRoster();
+  const bi=bestSeatFor(pl), bs=SEATLIST[bi], d=eyeOf(bs).distanceTo(pl.group.position);
+  const c=$("playerCard"); c.hidden=false;
+  c.innerHTML = `<div style="display:flex;gap:12px;align-items:center"><div class="num" style="background:${t.colors.shirt};color:${t.colors.number}">${pl.data.num}</div>
+      <div style="min-width:0"><h2>${esc(pl.data.name)}</h2><div class="hint">${esc(pl.data.pos)} · ${esc(t.name)}</div></div></div>
+    <dl class="facts"><dt>Ең жақсы орын</dt><dd>${seatName(bs)}</dd><dt>Ойыншыға дейін</dt><dd>${d.toFixed(0)} м</dd>
+      <dt>Ракурс</dt><dd>3/4 алдынан — бет пен нөмір қатар көрінеді</dd></dl>
+    <div class="row"><button class="btn" type="button" id="pSeat">🎟 Сол орыннан қарау</button><button class="btn ghost" type="button" id="pClose">📸 Жақын ракурс</button></div>
+    <button class="btn ghost small" type="button" id="pOrbit">🔄 Ойыншыны айналып қарау</button>`;
+  $("pSeat").onclick=()=>viewFromSeat(bi, pl.group.position.clone().setY(1.2));
+  $("pClose").onclick=()=>{ exitSeatUI(); const [p,tg,f]=closeUp(pl); setCam(p,tg,f,"orbit"); };
+  $("pOrbit").onclick=()=>{ exitSeatUI(); const P=pl.group.position; setCam(P.clone().add(new THREE.Vector3(P.x<0?-9:9,5,-7)), P.clone().setY(1), 45,"orbit"); };
+  if (fly){ exitSeatUI(); const [p,tg,f]=closeUp(pl); setCam(p,tg,f,"orbit"); }
+}
+const esc = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------------- UI wiring ---------------- */
+function showTab(name){ for (const n of ["seat","team","edit"]){ $("tab-"+n).setAttribute("aria-selected", n===name); $("pane-"+n).hidden = n!==name; }
+  $("panel").classList.remove("min"); if(name==="edit") fillEditor(); }
+for (const n of ["seat","team","edit"]) $("tab-"+n).onclick=()=>showTab(n);
+$("handle").onclick=()=>$("panel").classList.toggle("min");
+document.querySelectorAll("#viewChips .chip").forEach(c=>c.onclick=()=>goView(c.dataset.view));
+
+$("fStand").innerHTML = STANDS.map(s=>`<option value="${s.id}">${s.letter} · ${s.name}</option>`).join("");
+function fillSectors(){ const st=STANDS.find(s=>s.id===$("fStand").value); const v=$("fSector").value;
+  $("fSector").innerHTML = Array.from({length:SECTORS},(_,i)=>`<option value="${i+1}">${st.letter}${i+1}</option>`).join(""); if(v) $("fSector").value=v;
+  $("fRow").max=st.rows; $("fSeat").max=SEATS; }
+$("fStand").onchange=fillSectors; fillSectors(); $("fSector").value="3";
+function syncForm(){ const s=SEATLIST[selectedSeat]; $("fStand").value=s.stand.id; fillSectors(); $("fSector").value=s.sector; $("fRow").value=s.row; $("fSeat").value=s.seat; }
+$("btnGo").onclick=()=>{ const st=STANDS.find(s=>s.id===$("fStand").value); const r=+$("fRow").value, n=+$("fSeat").value;
+  if (!(r>=1&&r<=st.rows)) return toast(`Бұл трибунада 1–${st.rows} қатар бар`);
+  if (!(n>=1&&n<=SEATS)) return toast(`Әр қатарда 1–${SEATS} орын бар`);
+  viewFromSeat(seatIndex(st.id,+$("fSector").value,r,n)); };
+
+function renderHeader(){ const t=team(); $("teamTitle").textContent=t.name; $("stadTitle").textContent=`${DATA.stadium.name} · ${DATA.stadium.city}`;
+  const cr=$("crest"); cr.textContent=t.short; cr.style.background=t.colors.shirt; cr.style.color=t.colors.number; }
+function renderTeams(){ $("fTeam").innerHTML = DATA.teams.map((t,i)=>`<option value="${i}">${esc(t.name)} (${esc(t.city)})</option>`).join(""); $("fTeam").value=DATA.active; }
+function renderRoster(){ const t=team(); $("squadTitle").textContent=`Негізгі құрам · ${t.formation}`;
+  $("plist").innerHTML = t.players.slice(0,11).map((p,i)=>`<button class="pl" type="button" data-i="${i}" aria-pressed="${i===selectedPlayer}">
+    <span class="num" style="background:${t.colors.shirt};color:${t.colors.number}">${p.num}</span><span class="nm">${esc(p.name)}</span><span class="ps">${esc(p.pos)}</span></button>`).join("");
+  $("plist").querySelectorAll(".pl").forEach(b=>b.onclick=()=>selectPlayer(+b.dataset.i,true)); }
+$("fTeam").onchange=e=>{ DATA.active=+e.target.value; persist(); applyTeam(); toast("Команда ауыстырылды"); };
+
+function applyTeam(){
+  renderHeader(); renderTeams(); buildPlayers(); renderRoster(); paintSeats(); $("playerCard").hidden=true;
+  const bt=boardTexture(); boardMats.forEach(m=>{ m.map=bt; m.needsUpdate=true; });
+  scoreMat.map=scoreTexture(); scoreMat.emissiveMap=scoreMat.map; scoreMat.needsUpdate=true;
+  scene.traverse(o=>{ if(o.userData.teamColor) o.material.color.set(team().colors.shirt); });
+}
+
+/* Editor */
+$("eFormation").innerHTML = Object.keys(FORMATIONS).map(f=>`<option>${f}</option>`).join("");
+function fillEditor(){ const t=team(); $("eName").value=t.name; $("eShort").value=t.short; $("eCity").value=t.city; $("eStadium").value=DATA.stadium.name;
+  $("eFormation").value=t.formation; $("cShirt").value=t.colors.shirt; $("cShorts").value=t.colors.shorts; $("cNum").value=t.colors.number;
+  $("eplayers").innerHTML = t.players.slice(0,11).map((p,i)=>`<div class="edrow">
+    <input class="inp" id="en${i}" type="number" min="1" max="99" value="${p.num}" aria-label="Нөмір">
+    <input class="inp" id="em${i}" value="${esc(p.name)}" aria-label="Аты">
+    <input class="inp" id="ep${i}" value="${esc(p.pos)}" aria-label="Позиция"></div>`).join(""); }
+$("btnSave").onclick=()=>{ const t=team();
+  t.name=$("eName").value.trim()||t.name; t.short=($("eShort").value.trim()||t.short).slice(0,4); t.city=$("eCity").value.trim();
+  DATA.stadium.name=$("eStadium").value.trim()||DATA.stadium.name; t.formation=$("eFormation").value;
+  t.colors={shirt:$("cShirt").value,shorts:$("cShorts").value,number:$("cNum").value};
+  t.players.slice(0,11).forEach((p,i)=>{ p.num=+$("en"+i).value||p.num; p.name=$("em"+i).value.trim()||p.name; p.pos=$("ep"+i).value.trim()||p.pos; });
+  persist(); applyTeam(); toast("Сақталды ✓"); };
+$("btnNewTeam").onclick=()=>{ DATA.teams.push({ name:"Жаңа команда", short:"ЖАҢ", city:"Қала", formation:"4-4-2", colors:{shirt:"#2456c9",shorts:"#ffffff",number:"#ffffff"},
+  players:Array.from({length:11},(_,i)=>({num:i+1,name:"Ойыншы "+(i+1),pos:i===0?"ҚҚ":i<5?"ҚОР":i<9?"ЖАРТ":"ШАБ"})) });
+  DATA.active=DATA.teams.length-1; persist(); applyTeam(); fillEditor(); toast("Жаңа команда қосылды — атын жазып, «Сақтау» басыңыз"); };
+$("btnReset").onclick=()=>{ const b=$("btnReset"); if(b.dataset.armed){ DATA=JSON.parse(JSON.stringify(DEFAULT_DATA)); persist(); applyTeam(); fillEditor(); b.textContent="Бастапқы қалпына"; delete b.dataset.armed; toast("Бастапқы деректер қайтарылды"); }
+  else { b.dataset.armed=1; b.textContent="Растау: бәрін өшіру?"; setTimeout(()=>{ if(b.dataset.armed){ delete b.dataset.armed; b.textContent="Бастапқы қалпына"; } },3500); } };
+$("btnCopy").onclick=()=>{ const txt=JSON.stringify(DATA,null,1); const ta=$("jsonOut"); ta.hidden=false; ta.value=txt;
+  navigator.clipboard?.writeText(txt).then(()=>toast("Көшірілді ✓"),()=>{ ta.select(); toast("Мәтінді белгілеп, көшіріңіз"); }) || (ta.select()); };
+
+/* Day / night */
+let night=false;
+$("btnNight").onclick=()=>{ night=!night; $("btnNight").setAttribute("aria-pressed",night);
+  $("btnNight").innerHTML = night ? '☀️ <span class="t">Күндізгі матч</span>' : '🌙 <span class="t">Кешкі матч</span>';
+  skyU.top.value.set(night?"#050a18":"#2f6fb5"); skyU.bottom.value.set(night?"#1b2440":"#d9ecf5"); scene.fog.color.set(night?"#0d1426":"#cfe3ee");
+  sun.intensity = night?.25:2.1; sun.color.set(night?"#9fb4ff":"#fff4e0"); hemi.intensity = night?.25:.75;
+  floods.forEach(f=>f.intensity=night?1.3:0); floodHeads.forEach(m=>m.emissiveIntensity=night?2.5:.2);
+  renderer.toneMappingExposure = night?1.05:1; };
+
+/* ---------------- Loop ---------------- */
+function resize(){ const w=stage.clientWidth, h=stage.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+addEventListener("resize", resize);
+let last=performance.now();
+function loop(now){
+  const dt=(now-last)/1000; last=now;
+  stepCam(now);
+  if (CAM.idle && CAM.mode==="orbit"){ tmp.subVectors(CAM.pos,CAM.tgt); tmp.applyAxisAngle(THREE.Object3D.DefaultUp, dt*.05); CAM.pos.addVectors(CAM.tgt,tmp); }
+  if (marker.visible) marker.position.y = SEATLIST[selectedSeat].pos.y+2.2+Math.sin(now/250)*.25;
+  camera.position.copy(CAM.pos); camera.lookAt(CAM.tgt); if (camera.fov!==CAM.fov){ camera.fov=CAM.fov; camera.updateProjectionMatrix(); }
+  renderer.render(scene,camera); requestAnimationFrame(loop);
+}
+applyTeam();
+{ const [p,t,f]=VIEWS.overview(); CAM.pos.copy(p); CAM.tgt.copy(t); CAM.fov=f; CAM.idle=!matchMedia("(prefers-reduced-motion: reduce)").matches; }
+resize(); $("loading").hidden=true; requestAnimationFrame(loop);
+window.__app = { selectSeat, viewFromSeat, selectPlayer, seatIndex, goView, CAM };
+</script>
