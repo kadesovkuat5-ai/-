@@ -1,0 +1,651 @@
+<template>
+<style>
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('assets/fonts/oswald-cyrillic-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('assets/fonts/oswald-cyrillic-400-normal.woff2') format('woff2');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('assets/fonts/oswald-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('assets/fonts/oswald-cyrillic-ext-700-normal.woff2') format('woff2');
+  unicode-range: U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('assets/fonts/oswald-cyrillic-700-normal.woff2') format('woff2');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('assets/fonts/oswald-latin-700-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'PT Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('assets/fonts/pt-sans-cyrillic-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'PT Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('assets/fonts/pt-sans-cyrillic-400-normal.woff2') format('woff2');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face {
+  font-family: 'PT Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('assets/fonts/pt-sans-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'PT Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('assets/fonts/pt-sans-cyrillic-ext-700-normal.woff2') format('woff2');
+  unicode-range: U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'PT Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('assets/fonts/pt-sans-cyrillic-700-normal.woff2') format('woff2');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face {
+  font-family: 'PT Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('assets/fonts/pt-sans-latin-700-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+#root{position:absolute;inset:0;font-family:'PT Sans',sans-serif}
+.cap{position:absolute;left:160px;right:160px;bottom:56px;display:flex;justify-content:center}
+.cap-in{max-width:1600px;padding:12px 30px 14px;background:rgba(10,8,6,.72);border-radius:14px;color:#fffaf0;font-size:44px;line-height:1.25;font-weight:700;text-align:center}
+.ca b{color:#f2c14e}
+.ce b{color:#8fd3ff}
+
+</style>
+<div id="root" data-composition-id="captions" data-width="1920" data-height="1080" data-duration="1184.137">
+<div id="cap0" class="clip cap ca" data-start="0.000" data-duration="2.234" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл — екі соғыс туралы әңгіме.</div></div>
+<div id="cap1" class="clip cap ca" data-start="2.234" data-duration="3.701" data-track-index="2"><div class="cap-in"><b>Ата:</b> Адамзат тарихындағы ең ауыр екі соғыс туралы.</div></div>
+<div id="cap2" class="clip cap ca" data-start="7.035" data-duration="4.386" data-track-index="2"><div class="cap-in"><b>Ата:</b> Қысқы түн. Даладағы киіз үйде ата мен немересі отыр.</div></div>
+<div id="cap3" class="clip cap ce" data-start="12.521" data-duration="4.508" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Ата, мына ескі сурет кімдікі? Үстінде әскери киім бар екен.</div></div>
+<div id="cap4" class="clip cap ca" data-start="17.429" data-duration="2.301" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл — менің әкем, сенің бабаң.</div></div>
+<div id="cap5" class="clip cap ca" data-start="19.730" data-duration="3.187" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ол соғысқа кетті де, қайтып оралмады.</div></div>
+<div id="cap6" class="clip cap ce" data-start="23.317" data-duration="0.865" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Қай соғысқа?</div></div>
+<div id="cap7" class="clip cap ce" data-start="24.182" data-duration="4.100" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Бірінші дүниежүзілік соғысқа ма, әлде Екіншісіне ме?</div></div>
+<div id="cap8" class="clip cap ca" data-start="28.682" data-duration="1.092" data-track-index="2"><div class="cap-in"><b>Ата:</b> Екіншісіне, балам.</div></div>
+<div id="cap9" class="clip cap ca" data-start="29.774" data-duration="3.382" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ал Бірінші соғыс одан жиырма бес жыл бұрын болған.</div></div>
+<div id="cap10" class="clip cap ce" data-start="33.556" data-duration="3.257" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Ал екеуінің айырмашылығы қандай? Кім жеңді?</div></div>
+<div id="cap11" class="clip cap ce" data-start="36.813" data-duration="2.016" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Қанша адам қаза тапты?</div></div>
+<div id="cap12" class="clip cap ce" data-start="39.229" data-duration="3.751" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Қазақтар да соғысты ма? Олардың қаншасы оралмады?</div></div>
+<div id="cap13" class="clip cap ca" data-start="43.380" data-duration="2.141" data-track-index="2"><div class="cap-in"><b>Ата:</b> Жақсы сұрақтар. Отыр, балам.</div></div>
+<div id="cap14" class="clip cap ca" data-start="45.521" data-duration="4.327" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бүгін бәрін ретімен, жылымен, санымен айтып берейін.</div></div>
+<div id="cap15" class="clip cap ca" data-start="50.948" data-duration="3.979" data-track-index="2"><div class="cap-in"><b>Ата:</b> Алдымен Бірінші соғыс, сосын қазақ даласындағы 1916 жыл,</div></div>
+<div id="cap16" class="clip cap ca" data-start="54.927" data-duration="2.126" data-track-index="2"><div class="cap-in"><b>Ата:</b> содан кейін Екінші соғыс.</div></div>
+<div id="cap17" class="clip cap ca" data-start="57.453" data-duration="3.146" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ең соңында екі соғысты қатар қойып салыстырамыз.</div></div>
+<div id="cap18" class="clip cap ca" data-start="68.899" data-duration="2.632" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сонымен, Бірінші дүниежүзілік соғыс.</div></div>
+<div id="cap19" class="clip cap ca" data-start="72.631" data-duration="4.564" data-track-index="2"><div class="cap-in"><b>Ата:</b> Жүз жыл бұрын Еуропада бірнеше үлкен империя болды.</div></div>
+<div id="cap20" class="clip cap ca" data-start="77.195" data-duration="5.362" data-track-index="2"><div class="cap-in"><b>Ата:</b> Олар бір-бірімен жер, теңіз және ықпал үшін бәсекелесті.</div></div>
+<div id="cap21" class="clip cap ca" data-start="82.957" data-duration="3.246" data-track-index="2"><div class="cap-in"><b>Ата:</b> Олар бір-бірінен қорқып, екі үлкен одаққа бөлінді.</div></div>
+<div id="cap22" class="clip cap ca" data-start="86.203" data-duration="2.623" data-track-index="2"><div class="cap-in"><b>Ата:</b> Әр ел қару жинап, әскерін көбейтті.</div></div>
+<div id="cap23" class="clip cap ce" data-start="89.226" data-duration="3.438" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Яғни соғыс басталмас бұрын-ақ бәрі дайын тұрған ғой?</div></div>
+<div id="cap24" class="clip cap ca" data-start="93.064" data-duration="3.789" data-track-index="2"><div class="cap-in"><b>Ата:</b> Дәл солай. Тек бір ұшқын ғана жетпей тұрды.</div></div>
+<div id="cap25" class="clip cap ca" data-start="97.953" data-duration="6.215" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1914 жылы 28 маусымда Сараево қаласында Австрия-Венгрия тағының мұрагері</div></div>
+<div id="cap26" class="clip cap ca" data-start="104.168" data-duration="2.594" data-track-index="2"><div class="cap-in"><b>Ата:</b> Франц Фердинанд өлтірілді.</div></div>
+<div id="cap27" class="clip cap ca" data-start="107.162" data-duration="5.649" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бір айдан кейін, 28 шілдеде, Австрия-Венгрия Сербияға соғыс жариялады.</div></div>
+<div id="cap28" class="clip cap ca" data-start="113.211" data-duration="4.863" data-track-index="2"><div class="cap-in"><b>Ата:</b> Оны он тоғыз жасар серб жігіті Гаврило Принцип атып өлтірді.</div></div>
+<div id="cap29" class="clip cap ca" data-start="119.174" data-duration="3.416" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сосын одақтар бірінен соң бірі соғысқа кірді.</div></div>
+<div id="cap30" class="clip cap ca" data-start="122.590" data-duration="4.526" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бір жағында — Антанта: Ресей, Франция және Ұлыбритания.</div></div>
+<div id="cap31" class="clip cap ca" data-start="127.516" data-duration="7.852" data-track-index="2"><div class="cap-in"><b>Ата:</b> Кейін оларға 1915 жылы Италия, ал 1917 жылы Америка Құрама Штаттары қосылды.</div></div>
+<div id="cap32" class="clip cap ca" data-start="135.768" data-duration="4.981" data-track-index="2"><div class="cap-in"><b>Ата:</b> Екінші жағында — Орталық державалар: Германия, Австрия-Венгрия,</div></div>
+<div id="cap33" class="clip cap ca" data-start="140.749" data-duration="2.722" data-track-index="2"><div class="cap-in"><b>Ата:</b> Осман империясы және Болгария.</div></div>
+<div id="cap34" class="clip cap ca" data-start="143.871" data-duration="3.377" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1 тамызда Германия Ресейге соғыс жариялады.</div></div>
+<div id="cap35" class="clip cap ca" data-start="147.248" data-duration="6.083" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ұлыбритания Германия Бельгияға басып кірген соң, 4 тамызда соғысқа кірді.</div></div>
+<div id="cap36" class="clip cap ca" data-start="154.431" data-duration="2.733" data-track-index="2"><div class="cap-in"><b>Ата:</b> Миллиондаған жас жігіт әскерге алынды.</div></div>
+<div id="cap37" class="clip cap ca" data-start="157.164" data-duration="3.370" data-track-index="2"><div class="cap-in"><b>Ата:</b> Олар соғыс бірнеше айда бітеді деп ойлады.</div></div>
+<div id="cap38" class="clip cap ca" data-start="160.934" data-duration="2.504" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бірақ соғыс төрт жылдан астам созылды.</div></div>
+<div id="cap39" class="clip cap ca" data-start="164.538" data-duration="3.772" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1914 жылы күзде неміс әскері Парижге жақындады.</div></div>
+<div id="cap40" class="clip cap ca" data-start="168.310" data-duration="5.808" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бірақ Марна өзенінің бойында француздар мен ағылшындар оны тоқтатты.</div></div>
+<div id="cap41" class="clip cap ca" data-start="174.518" data-duration="4.702" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ал шығыста орыс әскері Германия мен Австрия-Венгрияға қарсы соғысты.</div></div>
+<div id="cap42" class="clip cap ca" data-start="179.220" data-duration="3.877" data-track-index="2"><div class="cap-in"><b>Ата:</b> Майдан Балтық теңізінен Қара теңізге дейін созылды.</div></div>
+<div id="cap43" class="clip cap ca" data-start="183.497" data-duration="6.059" data-track-index="2"><div class="cap-in"><b>Ата:</b> Оңтүстікте Осман империясы Галлиполиде одақтастардың теңіз десантын тоқтатты.</div></div>
+<div id="cap44" class="clip cap ca" data-start="197.856" data-duration="5.520" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бірінші соғыстың басты белгісі — окоп, яғни жер қазып жасалған ұзын ор.</div></div>
+<div id="cap45" class="clip cap ca" data-start="203.776" data-duration="4.048" data-track-index="2"><div class="cap-in"><b>Ата:</b> Батыс майданда екі әскер жүздеген шақырымға созылған орлар қазып,</div></div>
+<div id="cap46" class="clip cap ca" data-start="207.824" data-duration="1.845" data-track-index="2"><div class="cap-in"><b>Ата:</b> бір-біріне қарсы отырды.</div></div>
+<div id="cap47" class="clip cap ce" data-start="210.069" data-duration="2.441" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Ата, неге олар алға жүре алмады?</div></div>
+<div id="cap48" class="clip cap ca" data-start="212.910" data-duration="3.763" data-track-index="2"><div class="cap-in"><b>Ата:</b> Себебі екі ордың ортасында тікенек сым мен пулемет тұрды.</div></div>
+<div id="cap49" class="clip cap ca" data-start="216.673" data-duration="2.595" data-track-index="2"><div class="cap-in"><b>Ата:</b> Алға шыққан адам бірден оққа ұшты.</div></div>
+<div id="cap50" class="clip cap ca" data-start="219.668" data-duration="4.909" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сарбаздар жылдар бойы суық, батпақ пен егеуқұйрықтың ортасында өмір сүрді.</div></div>
+<div id="cap51" class="clip cap ca" data-start="225.677" data-duration="4.350" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл соғыста адамзат жаңа қаруларды алғаш рет көп қолданды.</div></div>
+<div id="cap52" class="clip cap ca" data-start="230.427" data-duration="4.409" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1915 жылы Ипр қаласының маңында улы газ қолданылды.</div></div>
+<div id="cap53" class="clip cap ca" data-start="234.836" data-duration="3.636" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сарбаздар газқағар киюге мәжбүр болды.</div></div>
+<div id="cap54" class="clip cap ca" data-start="239.572" data-duration="4.334" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1916 жылы Сомма шайқасында алғаш рет танк шықты.</div></div>
+<div id="cap55" class="clip cap ca" data-start="243.906" data-duration="4.233" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ол баяу, ауыр, бірақ орды кесіп өте алатын.</div></div>
+<div id="cap56" class="clip cap ca" data-start="248.539" data-duration="2.169" data-track-index="2"><div class="cap-in"><b>Ата:</b> Аспанда алғашқы ұшақтар ұшты.</div></div>
+<div id="cap57" class="clip cap ca" data-start="250.708" data-duration="3.117" data-track-index="2"><div class="cap-in"><b>Ата:</b> Әуелі барлау үшін, кейін соғысу үшін.</div></div>
+<div id="cap58" class="clip cap ca" data-start="254.925" data-duration="4.375" data-track-index="2"><div class="cap-in"><b>Ата:</b> Верден шайқасының өзінде шамамен үш жүз мың адам қаза тапты.</div></div>
+<div id="cap59" class="clip cap ca" data-start="259.300" data-duration="2.100" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл бір ғана шайқас еді.</div></div>
+<div id="cap60" class="clip cap ce" data-start="261.800" data-duration="2.776" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Үш жүз мың... Бұл тұтас бір қаланың халқы ғой.</div></div>
+<div id="cap61" class="clip cap ca" data-start="264.976" data-duration="0.809" data-track-index="2"><div class="cap-in"><b>Ата:</b> Иә, балам.</div></div>
+<div id="cap62" class="clip cap ca" data-start="265.785" data-duration="4.475" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сондықтан бұл соғысты кейін «ет тартқыш» деп атады.</div></div>
+<div id="cap63" class="clip cap ca" data-start="271.360" data-duration="4.242" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сол жылы шығыста орыс генералы Брусилов үлкен шабуыл жасап,</div></div>
+<div id="cap64" class="clip cap ca" data-start="275.602" data-duration="3.154" data-track-index="2"><div class="cap-in"><b>Ата:</b> Австрия-Венгрия әскерін кері ығыстырды.</div></div>
+<div id="cap65" class="clip cap ca" data-start="279.156" data-duration="2.346" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бірақ бұл жеңіс те өте қымбатқа түсті.</div></div>
+<div id="cap66" class="clip cap ca" data-start="281.502" data-duration="3.067" data-track-index="2"><div class="cap-in"><b>Ата:</b> Екі жақ та миллионға жуық адамынан айырылды.</div></div>
+<div id="cap67" class="clip cap ca" data-start="292.869" data-duration="2.862" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1917 жылы Ресейде төңкеріс болды.</div></div>
+<div id="cap68" class="clip cap ca" data-start="295.731" data-duration="4.427" data-track-index="2"><div class="cap-in"><b>Ата:</b> Патша тақтан түсті, кейін Ресей соғыстан шықты.</div></div>
+<div id="cap69" class="clip cap ca" data-start="300.558" data-duration="4.582" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сол жылы Америка соғысқа кірді. Антантаның күші арта түсті.</div></div>
+<div id="cap70" class="clip cap ca" data-start="306.240" data-duration="5.087" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1918 жылы 11 қарашада Германия бітімге қол қойды.</div></div>
+<div id="cap71" class="clip cap ca" data-start="311.327" data-duration="1.804" data-track-index="2"><div class="cap-in"><b>Ата:</b> Соғыс тоқтады.</div></div>
+<div id="cap72" class="clip cap ce" data-start="313.531" data-duration="1.604" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Сонда кім жеңді?</div></div>
+<div id="cap73" class="clip cap ca" data-start="316.235" data-duration="4.318" data-track-index="2"><div class="cap-in"><b>Ата:</b> Антанта жеңді. Германия мен оның одақтастары жеңілді.</div></div>
+<div id="cap74" class="clip cap ca" data-start="321.653" data-duration="5.447" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл соғыста шамамен 15 миллионнан 22 миллионға дейін адам қаза тапты.</div></div>
+<div id="cap75" class="clip cap ca" data-start="327.500" data-duration="2.899" data-track-index="2"><div class="cap-in"><b>Ата:</b> Оның шамамен 9–10 миллионы — сарбаздар.</div></div>
+<div id="cap76" class="clip cap ca" data-start="330.399" data-duration="3.473" data-track-index="2"><div class="cap-in"><b>Ата:</b> Яғни қаза тапқандардың көбі майданда өлді.</div></div>
+<div id="cap77" class="clip cap ca" data-start="334.272" data-duration="2.548" data-track-index="2"><div class="cap-in"><b>Ата:</b> Соғыстың соңында тағы бір қасірет келді:</div></div>
+<div id="cap78" class="clip cap ca" data-start="336.820" data-duration="3.280" data-track-index="2"><div class="cap-in"><b>Ата:</b> «испан тұмауы» деген ауру бүкіл әлемге тарады.</div></div>
+<div id="cap79" class="clip cap ca" data-start="340.500" data-duration="3.427" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ол соғыстан да көп адамның өмірін алды деп есептеледі.</div></div>
+<div id="cap80" class="clip cap ca" data-start="343.927" data-duration="2.508" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бірақ оны соғыс шығынына қоспайды.</div></div>
+<div id="cap81" class="clip cap ca" data-start="347.535" data-duration="4.238" data-track-index="2"><div class="cap-in"><b>Ата:</b> Соғыстан кейін төрт үлкен империя құлады: Ресей, Германия,</div></div>
+<div id="cap82" class="clip cap ca" data-start="351.773" data-duration="3.200" data-track-index="2"><div class="cap-in"><b>Ата:</b> Австрия-Венгрия және Осман империялары.</div></div>
+<div id="cap83" class="clip cap ca" data-start="356.073" data-duration="2.406" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1919 жылы Версаль шарты жасалды.</div></div>
+<div id="cap84" class="clip cap ca" data-start="358.479" data-duration="6.065" data-track-index="2"><div class="cap-in"><b>Ата:</b> Германия жерінің бір бөлігінен айырылып, үлкен төлем төлеуге міндетті болды.</div></div>
+<div id="cap85" class="clip cap ca" data-start="364.944" data-duration="4.000" data-track-index="2"><div class="cap-in"><b>Ата:</b> Адамдар мұны «соғыстарды тоқтататын соғыс» деп үміттенді.</div></div>
+<div id="cap86" class="clip cap ca" data-start="369.344" data-duration="3.163" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бірақ Германиядағы өкпе мен кедейлік кейін жаңа,</div></div>
+<div id="cap87" class="clip cap ca" data-start="372.507" data-duration="2.985" data-track-index="2"><div class="cap-in"><b>Ата:</b> одан да үлкен соғыстың бір себебі болды.</div></div>
+<div id="cap88" class="clip cap ce" data-start="383.792" data-duration="4.222" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Ата, ал сол кезде қазақтар қайда еді? Олар да соғысты ма?</div></div>
+<div id="cap89" class="clip cap ca" data-start="388.414" data-duration="3.852" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ол кезде қазақ жері Ресей империясының құрамында болатын.</div></div>
+<div id="cap90" class="clip cap ca" data-start="393.366" data-duration="2.830" data-track-index="2"><div class="cap-in"><b>Ата:</b> Патша үкіметі қазақтарды әскерге алмайтын.</div></div>
+<div id="cap91" class="clip cap ca" data-start="396.196" data-duration="2.910" data-track-index="2"><div class="cap-in"><b>Ата:</b> Оларды «бұратана» деп атап, сенбейтін.</div></div>
+<div id="cap92" class="clip cap ca" data-start="399.506" data-duration="1.845" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бірақ соғыс ұзаққа созылды.</div></div>
+<div id="cap93" class="clip cap ca" data-start="401.351" data-duration="2.606" data-track-index="2"><div class="cap-in"><b>Ата:</b> Майданға жұмыс қолы жетпей қалды.</div></div>
+<div id="cap94" class="clip cap ca" data-start="405.057" data-duration="5.854" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1916 жылы 25 маусымда патша Николай Екінші жарлық шығарды.</div></div>
+<div id="cap95" class="clip cap ca" data-start="411.311" data-duration="5.137" data-track-index="2"><div class="cap-in"><b>Ата:</b> Жарлық бойынша 19 бен 43 жас аралығындағы ер адамдар майдан маңындағы қара</div></div>
+<div id="cap96" class="clip cap ca" data-start="416.448" data-duration="2.086" data-track-index="2"><div class="cap-in"><b>Ата:</b> жұмысқа алынуы керек еді.</div></div>
+<div id="cap97" class="clip cap ca" data-start="418.934" data-duration="4.642" data-track-index="2"><div class="cap-in"><b>Ата:</b> Олар ор қазып, жол салып, қорғаныс құрылыстарын тұрғызуы тиіс болды.</div></div>
+<div id="cap98" class="clip cap ce" data-start="423.976" data-duration="1.627" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Ал халық келісті ме?</div></div>
+<div id="cap99" class="clip cap ca" data-start="426.703" data-duration="3.799" data-track-index="2"><div class="cap-in"><b>Ата:</b> Жоқ. Жарлық күзде, егін мен шөп жинайтын кезде шықты.</div></div>
+<div id="cap100" class="clip cap ca" data-start="430.502" data-duration="2.644" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ауылдар асыраушысыз қалатын еді.</div></div>
+<div id="cap101" class="clip cap ca" data-start="433.546" data-duration="5.593" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сөйтіп, қазақ даласында 1916 жылғы ұлт-азаттық көтеріліс басталды.</div></div>
+<div id="cap102" class="clip cap ca" data-start="440.239" data-duration="5.721" data-track-index="2"><div class="cap-in"><b>Ата:</b> Торғай өңірінде Амангелді Иманов пен Әбдіғаппар Жанбосынұлы көтерілісшілерді</div></div>
+<div id="cap103" class="clip cap ca" data-start="445.960" data-duration="0.952" data-track-index="2"><div class="cap-in"><b>Ата:</b> бастады.</div></div>
+<div id="cap104" class="clip cap ca" data-start="447.312" data-duration="3.996" data-track-index="2"><div class="cap-in"><b>Ата:</b> Жетісуда Бекболат Әшекеев пен Тоқаш Бокин халықты бастады.</div></div>
+<div id="cap105" class="clip cap ca" data-start="452.408" data-duration="2.229" data-track-index="2"><div class="cap-in"><b>Ата:</b> Көтеріліс қатыгездікпен басылды.</div></div>
+<div id="cap106" class="clip cap ca" data-start="454.637" data-duration="3.275" data-track-index="2"><div class="cap-in"><b>Ата:</b> Мыңдаған адам қаза тапты, ауылдар өртелді.</div></div>
+<div id="cap107" class="clip cap ca" data-start="458.312" data-duration="3.621" data-track-index="2"><div class="cap-in"><b>Ата:</b> Жетісудан мыңдаған қазақ пен қырғыз отбасы тау асып,</div></div>
+<div id="cap108" class="clip cap ca" data-start="461.933" data-duration="3.901" data-track-index="2"><div class="cap-in"><b>Ата:</b> Қытайға қашуға мәжбүр болды. Көбі жолда қаза тапты.</div></div>
+<div id="cap109" class="clip cap ca" data-start="466.234" data-duration="4.736" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ал жұмысқа алынған жігіттер майдан маңында ауыр жағдайда еңбек етті.</div></div>
+<div id="cap110" class="clip cap ca" data-start="470.970" data-duration="2.788" data-track-index="2"><div class="cap-in"><b>Ата:</b> Көбі суық пен аурудан қайтыс болды.</div></div>
+<div id="cap111" class="clip cap ca" data-start="474.858" data-duration="3.647" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сол жылы қанша қазақ қаза тапқаны әлі толық анықталмаған.</div></div>
+<div id="cap112" class="clip cap ca" data-start="478.505" data-duration="2.462" data-track-index="2"><div class="cap-in"><b>Ата:</b> Тарихшылар оны әлі зерттеп жатыр.</div></div>
+<div id="cap113" class="clip cap ce" data-start="482.067" data-duration="4.472" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Яғни Бірінші соғыста қазақтар майданда емес, өз жерінде қиналды ғой?</div></div>
+<div id="cap114" class="clip cap ca" data-start="486.939" data-duration="5.818" data-track-index="2"><div class="cap-in"><b>Ата:</b> Иә, балам. Дәл солай. Ал Екінші соғыста бәрі басқаша болды.</div></div>
+<div id="cap115" class="clip cap ca" data-start="501.057" data-duration="4.588" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бірінші соғыс біткеннен кейін жиырма жылдан соң әлем қайтадан отқа оранды.</div></div>
+<div id="cap116" class="clip cap ca" data-start="506.045" data-duration="4.083" data-track-index="2"><div class="cap-in"><b>Ата:</b> Германияда билікке Адольф Гитлер бастаған нацистер келді.</div></div>
+<div id="cap117" class="clip cap ca" data-start="510.128" data-duration="3.144" data-track-index="2"><div class="cap-in"><b>Ата:</b> Олар жаңа жерлерді басып алуды көздеді.</div></div>
+<div id="cap118" class="clip cap ca" data-start="514.372" data-duration="4.705" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1939 жылы 1 қыркүйекте Германия Польшаға басып кірді.</div></div>
+<div id="cap119" class="clip cap ca" data-start="519.077" data-duration="4.078" data-track-index="2"><div class="cap-in"><b>Ата:</b> Екінші дүниежүзілік соғыс осылай басталды.</div></div>
+<div id="cap120" class="clip cap ca" data-start="524.255" data-duration="3.866" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл жолы соғыс орда отырып емес, жылдам қозғалыспен жүрді.</div></div>
+<div id="cap121" class="clip cap ca" data-start="528.121" data-duration="3.683" data-track-index="2"><div class="cap-in"><b>Ата:</b> Мұны «блицкриг», яғни «найзағай соғысы» деп атады.</div></div>
+<div id="cap122" class="clip cap ca" data-start="532.204" data-duration="5.826" data-track-index="2"><div class="cap-in"><b>Ата:</b> Танктер мен ұшақтар бірге шабуылдап, бірнеше аптада тұтас елдерді басып алды.</div></div>
+<div id="cap123" class="clip cap ca" data-start="538.430" data-duration="4.578" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1940 жылы Франция бар болғаны алты аптада жеңілді.</div></div>
+<div id="cap124" class="clip cap ca" data-start="544.108" data-duration="4.531" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бір жағында «Ось» елдері болды: Германия, Италия және Жапония.</div></div>
+<div id="cap125" class="clip cap ca" data-start="549.039" data-duration="4.862" data-track-index="2"><div class="cap-in"><b>Ата:</b> Екінші жағында — Одақтастар: Кеңес Одағы, Америка, Ұлыбритания,</div></div>
+<div id="cap126" class="clip cap ca" data-start="553.901" data-duration="2.820" data-track-index="2"><div class="cap-in"><b>Ата:</b> Қытай және басқа көптеген елдер.</div></div>
+<div id="cap127" class="clip cap ca" data-start="557.821" data-duration="7.072" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1941 жылы 22 маусымда таң атпай Германия Кеңес Одағына шабуыл жасады.</div></div>
+<div id="cap128" class="clip cap ca" data-start="565.293" data-duration="3.269" data-track-index="2"><div class="cap-in"><b>Ата:</b> Біз бұл соғысты Ұлы Отан соғысы деп атаймыз.</div></div>
+<div id="cap129" class="clip cap ca" data-start="568.562" data-duration="1.985" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ол төрт жылға созылды.</div></div>
+<div id="cap130" class="clip cap ca" data-start="571.647" data-duration="4.942" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сол жылы желтоқсанда Жапония Перл-Харбордағы Америка флотына шабуыл жасады.</div></div>
+<div id="cap131" class="clip cap ca" data-start="576.589" data-duration="1.997" data-track-index="2"><div class="cap-in"><b>Ата:</b> Америка да соғысқа кірді.</div></div>
+<div id="cap132" class="clip cap ce" data-start="578.986" data-duration="2.231" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Сонда бүкіл әлем соғысқан ғой?</div></div>
+<div id="cap133" class="clip cap ca" data-start="582.317" data-duration="3.846" data-track-index="2"><div class="cap-in"><b>Ата:</b> Иә. Бұл соғысқа алпыстан астам мемлекет қатысты.</div></div>
+<div id="cap134" class="clip cap ca" data-start="586.163" data-duration="4.918" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ол Еуропада да, Азияда да, Африкада да, мұхитта да жүрді.</div></div>
+<div id="cap135" class="clip cap ca" data-start="599.381" data-duration="4.609" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1941 жылдың күзі мен қысында жау Мәскеуге жақындады.</div></div>
+<div id="cap136" class="clip cap ca" data-start="603.990" data-duration="2.389" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бірақ Мәскеу берілмеді.</div></div>
+<div id="cap137" class="clip cap ca" data-start="607.479" data-duration="4.216" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1942–1943 жылдары Сталинград шайқасы болды.</div></div>
+<div id="cap138" class="clip cap ca" data-start="611.695" data-duration="3.586" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл соғыстың бетбұрыс кезеңі еді.</div></div>
+<div id="cap139" class="clip cap ca" data-start="616.381" data-duration="5.789" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1943 жылы Курск түбінде тарихтағы ең үлкен танк шайқастарының бірі өтті.</div></div>
+<div id="cap140" class="clip cap ca" data-start="622.570" data-duration="4.406" data-track-index="2"><div class="cap-in"><b>Ата:</b> Осыдан кейін Кеңес әскері батысқа қарай шегінбей алға жүрді.</div></div>
+<div id="cap141" class="clip cap ca" data-start="628.076" data-duration="6.169" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1944 жылы 6 маусымда Одақтастар Франциядағы Нормандия жағалауына әскер</div></div>
+<div id="cap142" class="clip cap ca" data-start="634.245" data-duration="1.055" data-track-index="2"><div class="cap-in"><b>Ата:</b> түсірді.</div></div>
+<div id="cap143" class="clip cap ca" data-start="635.700" data-duration="4.216" data-track-index="2"><div class="cap-in"><b>Ата:</b> Енді Германияны шығыстан да, батыстан да қыса бастады.</div></div>
+<div id="cap144" class="clip cap ca" data-start="641.016" data-duration="3.465" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл соғыстың ең қорқынышты беті — Холокост.</div></div>
+<div id="cap145" class="clip cap ca" data-start="644.481" data-duration="3.815" data-track-index="2"><div class="cap-in"><b>Ата:</b> Нацистер шамамен 6 миллион еврейді өлтірді.</div></div>
+<div id="cap146" class="clip cap ca" data-start="648.695" data-duration="4.757" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сонымен қатар тұтқындар мен бейбіт тұрғындар лагерьлерде аштық пен азаптан</div></div>
+<div id="cap147" class="clip cap ca" data-start="653.452" data-duration="1.057" data-track-index="2"><div class="cap-in"><b>Ата:</b> қаза тапты.</div></div>
+<div id="cap148" class="clip cap ca" data-start="655.609" data-duration="4.174" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ленинград қаласы 872 күн бойы жау қоршауында қалды.</div></div>
+<div id="cap149" class="clip cap ca" data-start="660.183" data-duration="1.498" data-track-index="2"><div class="cap-in"><b>Ата:</b> Қалада нан таусылды.</div></div>
+<div id="cap150" class="clip cap ca" data-start="661.681" data-duration="4.695" data-track-index="2"><div class="cap-in"><b>Ата:</b> Шамамен бір миллионға жуық тұрғын, көбі аштан, қаза тапты.</div></div>
+<div id="cap151" class="clip cap ca" data-start="667.476" data-duration="4.783" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сол кезде қазақтың ұлы ақыны Жамбыл Жабаев «Ленинградтық өренім» деген өлең</div></div>
+<div id="cap152" class="clip cap ca" data-start="672.259" data-duration="0.733" data-track-index="2"><div class="cap-in"><b>Ата:</b> жазды.</div></div>
+<div id="cap153" class="clip cap ca" data-start="673.392" data-duration="4.522" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл өлең қоршаудағы қаланың көшелерінде оқылып, адамдарға күш берді.</div></div>
+<div id="cap154" class="clip cap ca" data-start="679.014" data-duration="3.770" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1945 жылы көктемде Кеңес әскері Берлинге кірді.</div></div>
+<div id="cap155" class="clip cap ca" data-start="682.784" data-duration="3.077" data-track-index="2"><div class="cap-in"><b>Ата:</b> Рейхстаг үстіне Жеңіс туы тігілді.</div></div>
+<div id="cap156" class="clip cap ca" data-start="686.961" data-duration="5.261" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1945 жылы 9 мамырда Германияның берілгені жарияланды.</div></div>
+<div id="cap157" class="clip cap ca" data-start="692.222" data-duration="2.037" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл — Жеңіс күні.</div></div>
+<div id="cap158" class="clip cap ce" data-start="694.659" data-duration="1.894" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Ал соғыс сонымен бітті ме?</div></div>
+<div id="cap159" class="clip cap ca" data-start="697.653" data-duration="2.906" data-track-index="2"><div class="cap-in"><b>Ата:</b> Жоқ. Жапония әлі соғысып жатты.</div></div>
+<div id="cap160" class="clip cap ca" data-start="700.559" data-duration="7.098" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1945 жылы тамызда Америка Хиросима мен Нагасакиге атом бомбасын тастады.</div></div>
+<div id="cap161" class="clip cap ca" data-start="708.057" data-duration="2.600" data-track-index="2"><div class="cap-in"><b>Ата:</b> Екі қалада жүз мыңдаған адам қаза тапты.</div></div>
+<div id="cap162" class="clip cap ca" data-start="710.658" data-duration="2.950" data-track-index="2"><div class="cap-in"><b>Ата:</b> Адамзат мұндай қаруды бірінші рет көрді.</div></div>
+<div id="cap163" class="clip cap ca" data-start="714.708" data-duration="3.239" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1945 жылы 2 қыркүйекте Жапония берілді.</div></div>
+<div id="cap164" class="clip cap ca" data-start="717.947" data-duration="3.755" data-track-index="2"><div class="cap-in"><b>Ата:</b> Екінші дүниежүзілік соғыс толық аяқталды.</div></div>
+<div id="cap165" class="clip cap ce" data-start="730.002" data-duration="2.091" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Сонда бұл жолы кім жеңді?</div></div>
+<div id="cap166" class="clip cap ca" data-start="732.493" data-duration="3.739" data-track-index="2"><div class="cap-in"><b>Ата:</b> Одақтастар жеңді: Кеңес Одағы, Америка, Ұлыбритания,</div></div>
+<div id="cap167" class="clip cap ca" data-start="736.232" data-duration="3.227" data-track-index="2"><div class="cap-in"><b>Ата:</b> Қытай және олармен бірге соғысқан елдер.</div></div>
+<div id="cap168" class="clip cap ca" data-start="740.559" data-duration="4.980" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл соғыста шамамен 70 миллионнан 85 миллионға дейін адам қаза тапты.</div></div>
+<div id="cap169" class="clip cap ca" data-start="745.939" data-duration="4.848" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл — сол кездегі жер бетіндегі барлық адамның шамамен үш пайызы.</div></div>
+<div id="cap170" class="clip cap ce" data-start="751.187" data-duration="2.277" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Бірінші соғыстан неше есе көп?</div></div>
+<div id="cap171" class="clip cap ca" data-start="754.564" data-duration="1.693" data-track-index="2"><div class="cap-in"><b>Ата:</b> Шамамен төрт есе көп.</div></div>
+<div id="cap172" class="clip cap ca" data-start="756.257" data-duration="3.735" data-track-index="2"><div class="cap-in"><b>Ата:</b> Әр бір кішкентай сұлба — бір миллион адам.</div></div>
+<div id="cap173" class="clip cap ca" data-start="760.392" data-duration="5.090" data-track-index="2"><div class="cap-in"><b>Ата:</b> Тағы бір үлкен айырмашылық бар: бұл жолы қаза тапқандардың көбі сарбаз емес,</div></div>
+<div id="cap174" class="clip cap ca" data-start="765.482" data-duration="1.623" data-track-index="2"><div class="cap-in"><b>Ата:</b> бейбіт халық болды.</div></div>
+<div id="cap175" class="clip cap ca" data-start="767.505" data-duration="3.664" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бомбаланған қалалар, аштық, лагерьлер, қуғын-сүргін</div></div>
+<div id="cap176" class="clip cap ca" data-start="771.169" data-duration="2.865" data-track-index="2"><div class="cap-in"><b>Ата:</b> — соғыс үйдегі адамдарды да аямады.</div></div>
+<div id="cap177" class="clip cap ca" data-start="775.134" data-duration="4.209" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ең көп шығынды Кеңес Одағы көрді: шамамен 27 миллион адам.</div></div>
+<div id="cap178" class="clip cap ca" data-start="779.743" data-duration="5.144" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ол кездегі кеңес елдерінің әрбір отбасынан дерлік біреу соғыстан оралмады.</div></div>
+<div id="cap179" class="clip cap ca" data-start="785.987" data-duration="2.275" data-track-index="2"><div class="cap-in"><b>Ата:</b> Соғыстан кейін, 1945 жылы күзде,</div></div>
+<div id="cap180" class="clip cap ca" data-start="788.262" data-duration="4.829" data-track-index="2"><div class="cap-in"><b>Ата:</b> мұндай қасірет қайталанбасын деп Біріккен Ұлттар Ұйымы құрылды.</div></div>
+<div id="cap181" class="clip cap ce" data-start="801.391" data-duration="3.849" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Ата, ал біздің бабамыз сияқты қанша қазақстандық соғысқа барды?</div></div>
+<div id="cap182" class="clip cap ca" data-start="806.340" data-duration="4.264" data-track-index="2"><div class="cap-in"><b>Ата:</b> Соғыс басталғанда Қазақстанда шамамен алты миллион адам тұратын.</div></div>
+<div id="cap183" class="clip cap ca" data-start="811.704" data-duration="4.512" data-track-index="2"><div class="cap-in"><b>Ата:</b> Солардың ішінен майданға шамамен 1 миллион 200 мың адам аттанды.</div></div>
+<div id="cap184" class="clip cap ca" data-start="816.616" data-duration="3.561" data-track-index="2"><div class="cap-in"><b>Ата:</b> Вокзалдарда аналар ұлдарын, әйелдер күйеулерін,</div></div>
+<div id="cap185" class="clip cap ca" data-start="820.177" data-duration="2.699" data-track-index="2"><div class="cap-in"><b>Ата:</b> балалар әкелерін шығарып салды.</div></div>
+<div id="cap186" class="clip cap ca" data-start="823.976" data-duration="1.662" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бір миллион екі жүз мың.</div></div>
+<div id="cap187" class="clip cap ca" data-start="825.638" data-duration="3.467" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл — Қазақстан халқының әрбір бесінші адамы.</div></div>
+<div id="cap188" class="clip cap ca" data-start="830.205" data-duration="3.458" data-track-index="2"><div class="cap-in"><b>Ата:</b> Солардың алты жүз мыңнан астамы елге оралмады.</div></div>
+<div id="cap189" class="clip cap ca" data-start="834.763" data-duration="4.594" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ал екі жүз жетпіс бір мыңнан астамы әлі күнге дейін хабарсыз кеткен болып</div></div>
+<div id="cap190" class="clip cap ca" data-start="839.357" data-duration="0.916" data-track-index="2"><div class="cap-in"><b>Ата:</b> саналады.</div></div>
+<div id="cap191" class="clip cap ce" data-start="840.673" data-duration="2.321" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Хабарсыз кеткен деген не, ата?</div></div>
+<div id="cap192" class="clip cap ca" data-start="843.394" data-duration="3.694" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл — қайда, қалай қаза тапқаны белгісіз адамдар.</div></div>
+<div id="cap193" class="clip cap ca" data-start="847.088" data-duration="4.271" data-track-index="2"><div class="cap-in"><b>Ата:</b> Отбасы оларды жылдар бойы күтті. Біздің үй де күтті.</div></div>
+<div id="cap194" class="clip cap ca" data-start="852.459" data-duration="4.789" data-track-index="2"><div class="cap-in"><b>Ата:</b> 1941 жылы Алматыда 316-атқыштар дивизиясы құрылды.</div></div>
+<div id="cap195" class="clip cap ca" data-start="857.248" data-duration="3.702" data-track-index="2"><div class="cap-in"><b>Ата:</b> Оны генерал Иван Панфилов басқарды.</div></div>
+<div id="cap196" class="clip cap ca" data-start="861.350" data-duration="5.720" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бұл дивизия Мәскеу түбінде жауды тоқтатып, астананы қорғауға үлкен үлес қосты.</div></div>
+<div id="cap197" class="clip cap ca" data-start="868.170" data-duration="3.941" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сол дивизиядағы батальон командирі — Бауыржан Момышұлы.</div></div>
+<div id="cap198" class="clip cap ca" data-start="872.111" data-duration="3.359" data-track-index="2"><div class="cap-in"><b>Ата:</b> Оның ерлігі туралы кейін бүкіл әлем білді.</div></div>
+<div id="cap199" class="clip cap ca" data-start="876.570" data-duration="2.497" data-track-index="2"><div class="cap-in"><b>Ата:</b> Әлия Молдағұлова — мерген қыз.</div></div>
+<div id="cap200" class="clip cap ca" data-start="879.067" data-duration="3.512" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ол небәрі он сегіз жасында қаза тапты.</div></div>
+<div id="cap201" class="clip cap ca" data-start="883.679" data-duration="2.493" data-track-index="2"><div class="cap-in"><b>Ата:</b> Мәншүк Мәметова — пулеметші қыз.</div></div>
+<div id="cap202" class="clip cap ca" data-start="886.172" data-duration="6.194" data-track-index="2"><div class="cap-in"><b>Ата:</b> Әлия мен Мәншүк — Кеңес Одағының Батыры атағын алған алғашқы қазақ қыздары.</div></div>
+<div id="cap203" class="clip cap ca" data-start="893.466" data-duration="1.990" data-track-index="2"><div class="cap-in"><b>Ата:</b> Талғат Бигелдинов — ұшқыш.</div></div>
+<div id="cap204" class="clip cap ca" data-start="895.456" data-duration="3.565" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ол екі мәрте Кеңес Одағының Батыры атанды.</div></div>
+<div id="cap205" class="clip cap ca" data-start="900.121" data-duration="1.711" data-track-index="2"><div class="cap-in"><b>Ата:</b> Нүркен Әбдіров — ұшқыш.</div></div>
+<div id="cap206" class="clip cap ca" data-start="901.832" data-duration="4.812" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ұшағы оқ тиіп жанғанда, ол оны жаудың техникасына бағыттады.</div></div>
+<div id="cap207" class="clip cap ca" data-start="907.744" data-duration="5.355" data-track-index="2"><div class="cap-in"><b>Ата:</b> Рақымжан Қошқарбаев — Берлинде Рейхстагқа алғашқы туларды тіккендердің бірі.</div></div>
+<div id="cap208" class="clip cap ca" data-start="914.199" data-duration="4.803" data-track-index="2"><div class="cap-in"><b>Ата:</b> Қазақстандықтардың шамамен бес жүзі Кеңес Одағының Батыры атағын алды.</div></div>
+<div id="cap209" class="clip cap ca" data-start="919.002" data-duration="2.545" data-track-index="2"><div class="cap-in"><b>Ата:</b> Олардың шамамен жүзі — қазақтар.</div></div>
+<div id="cap210" class="clip cap ca" data-start="922.647" data-duration="4.543" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ал тылда, яғни елде, әйелдер, қарттар мен балалар зауытта, кенішта,</div></div>
+<div id="cap211" class="clip cap ca" data-start="927.190" data-duration="2.927" data-track-index="2"><div class="cap-in"><b>Ата:</b> егістікте түнгі-күндізгі жұмыс істеді.</div></div>
+<div id="cap212" class="clip cap ca" data-start="930.517" data-duration="4.847" data-track-index="2"><div class="cap-in"><b>Ата:</b> Олар майданды нанмен, етпен, көмірмен, қару-жарақпен қамтамасыз етті.</div></div>
+<div id="cap213" class="clip cap ca" data-start="935.764" data-duration="4.513" data-track-index="2"><div class="cap-in"><b>Ата:</b> Қазақстан басқа өңірлерден көшірілген жүз мыңдаған адамды, зауыттарды,</div></div>
+<div id="cap214" class="clip cap ca" data-start="940.277" data-duration="1.639" data-track-index="2"><div class="cap-in"><b>Ата:</b> балаларды қабылдады.</div></div>
+<div id="cap215" class="clip cap ca" data-start="942.316" data-duration="5.242" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сонымен бірге Қазақстанға өз жерінен күшпен көшірілген халықтар әкелінді:</div></div>
+<div id="cap216" class="clip cap ca" data-start="947.558" data-duration="3.437" data-track-index="2"><div class="cap-in"><b>Ата:</b> немістер, шешендер, ингуштар және басқалар.</div></div>
+<div id="cap217" class="clip cap ca" data-start="951.395" data-duration="2.974" data-track-index="2"><div class="cap-in"><b>Ата:</b> Олардың алдында корейлер де жер аударылған еді.</div></div>
+<div id="cap218" class="clip cap ca" data-start="954.369" data-duration="3.640" data-track-index="2"><div class="cap-in"><b>Ата:</b> Қазақ халқы өзі аш отырса да, олармен нанын бөлісті.</div></div>
+<div id="cap219" class="clip cap ca" data-start="958.409" data-duration="5.142" data-track-index="2"><div class="cap-in"><b>Ата:</b> Шымкенттің қорғасын зауыты майданға оқ жасайтын қорғасынның өте үлкен бөлігін</div></div>
+<div id="cap220" class="clip cap ca" data-start="963.551" data-duration="0.751" data-track-index="2"><div class="cap-in"><b>Ата:</b> берді.</div></div>
+<div id="cap221" class="clip cap ce" data-start="972.602" data-duration="3.067" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Ата, хабарсыз кеткен сарбаздар қайда жатыр?</div></div>
+<div id="cap222" class="clip cap ca" data-start="976.069" data-duration="5.270" data-track-index="2"><div class="cap-in"><b>Ата:</b> Көбі соғыс болған жерлерде — Ржев, Смоленск, Псков, Новгород,</div></div>
+<div id="cap223" class="clip cap ca" data-start="981.339" data-duration="3.719" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ленинград маңындағы орман мен батпақта.</div></div>
+<div id="cap224" class="clip cap ca" data-start="985.458" data-duration="3.477" data-track-index="2"><div class="cap-in"><b>Ата:</b> Олардың көбі әлі күнге дейін жерленбей жатыр.</div></div>
+<div id="cap225" class="clip cap ce" data-start="989.335" data-duration="2.748" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Қанша? Нақты саны белгілі ме?</div></div>
+<div id="cap226" class="clip cap ca" data-start="993.183" data-duration="2.724" data-track-index="2"><div class="cap-in"><b>Ата:</b> Жоқ, балам. Нақты санын ешкім білмейді.</div></div>
+<div id="cap227" class="clip cap ca" data-start="995.907" data-duration="5.029" data-track-index="2"><div class="cap-in"><b>Ата:</b> Хабарсыз кеткен екі жүз жетпіс бір мың адамның көбінің қайда жатқаны әлі</div></div>
+<div id="cap228" class="clip cap ca" data-start="1000.936" data-duration="0.979" data-track-index="2"><div class="cap-in"><b>Ата:</b> белгісіз.</div></div>
+<div id="cap229" class="clip cap ca" data-start="1003.015" data-duration="1.338" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бірақ іздеушілер бар.</div></div>
+<div id="cap230" class="clip cap ca" data-start="1004.353" data-duration="4.013" data-track-index="2"><div class="cap-in"><b>Ата:</b> Қазақстан мен Ресейдің іздеу отрядтары жыл сайын орманға барып,</div></div>
+<div id="cap231" class="clip cap ca" data-start="1008.365" data-duration="1.624" data-track-index="2"><div class="cap-in"><b>Ата:</b> сарбаздарды іздейді.</div></div>
+<div id="cap232" class="clip cap ca" data-start="1010.389" data-duration="4.569" data-track-index="2"><div class="cap-in"><b>Ата:</b> Олар жерді абайлап қазып, сарбаздың сүйегін, медальонын, медалін,</div></div>
+<div id="cap233" class="clip cap ca" data-start="1014.958" data-duration="1.405" data-track-index="2"><div class="cap-in"><b>Ата:</b> қасығын табады.</div></div>
+<div id="cap234" class="clip cap ca" data-start="1017.463" data-duration="3.006" data-track-index="2"><div class="cap-in"><b>Ата:</b> Кейде медальонның ішінен кішкентай қағаз шығады.</div></div>
+<div id="cap235" class="clip cap ca" data-start="1020.469" data-duration="3.419" data-track-index="2"><div class="cap-in"><b>Ата:</b> Онда сарбаздың аты-жөні мен туған ауылы жазылған.</div></div>
+<div id="cap236" class="clip cap ca" data-start="1024.288" data-duration="1.770" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сол арқылы туыстары табылады.</div></div>
+<div id="cap237" class="clip cap ca" data-start="1026.058" data-duration="4.072" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сексен жылдан кейін отбасы өз атасының қайда жатқанын біледі.</div></div>
+<div id="cap238" class="clip cap ca" data-start="1031.230" data-duration="2.888" data-track-index="2"><div class="cap-in"><b>Ата:</b> Кейбір сарбаздардың сүйегі туған жеріне әкелініп,</div></div>
+<div id="cap239" class="clip cap ca" data-start="1034.118" data-duration="2.295" data-track-index="2"><div class="cap-in"><b>Ата:</b> әскери құрметпен қайта жерленеді.</div></div>
+<div id="cap240" class="clip cap ce" data-start="1036.813" data-duration="2.753" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Ата, біздің бабамызды да табуға бола ма?</div></div>
+<div id="cap241" class="clip cap ca" data-start="1040.666" data-duration="0.523" data-track-index="2"><div class="cap-in"><b>Ата:</b> Болады.</div></div>
+<div id="cap242" class="clip cap ca" data-start="1041.189" data-duration="5.802" data-track-index="2"><div class="cap-in"><b>Ата:</b> Интернетте «Мемориал» деген деректер базасында атын жазып іздеуге болады.</div></div>
+<div id="cap243" class="clip cap ca" data-start="1047.391" data-duration="4.219" data-track-index="2"><div class="cap-in"><b>Ата:</b> «Атамның аманаты» қоғамдық бірлестігі де адамдарға туыстарын іздеуге</div></div>
+<div id="cap244" class="clip cap ca" data-start="1051.610" data-duration="1.095" data-track-index="2"><div class="cap-in"><b>Ата:</b> көмектеседі.</div></div>
+<div id="cap245" class="clip cap ce" data-start="1053.105" data-duration="2.698" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Онда мен міндетті түрде іздеймін, ата.</div></div>
+<div id="cap246" class="clip cap ce" data-start="1055.803" data-duration="2.267" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Бабамыздың атын ұмытпаймыз.</div></div>
+<div id="cap247" class="clip cap ca" data-start="1066.370" data-duration="2.960" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ал енді екі соғысты қатар қойып салыстырайық.</div></div>
+<div id="cap248" class="clip cap ca" data-start="1070.430" data-duration="6.458" data-track-index="2"><div class="cap-in"><b>Ата:</b> Бірінші соғыс 1914 жылдан 1918 жылға дейін, төрт жылдан астам жүрді.</div></div>
+<div id="cap249" class="clip cap ca" data-start="1076.888" data-duration="5.478" data-track-index="2"><div class="cap-in"><b>Ата:</b> Екіншісі 1939 жылдан 1945 жылға дейін, алты жыл жүрді.</div></div>
+<div id="cap250" class="clip cap ca" data-start="1083.466" data-duration="4.781" data-track-index="2"><div class="cap-in"><b>Ата:</b> Біріншісінде Антанта жеңді. Екіншісінде Одақтастар жеңді.</div></div>
+<div id="cap251" class="clip cap ca" data-start="1089.347" data-duration="3.382" data-track-index="2"><div class="cap-in"><b>Ата:</b> Біріншісінде шамамен 15–22 миллион адам,</div></div>
+<div id="cap252" class="clip cap ca" data-start="1092.729" data-duration="3.901" data-track-index="2"><div class="cap-in"><b>Ата:</b> екіншісінде 70–85 миллион адам қаза тапты.</div></div>
+<div id="cap253" class="clip cap ca" data-start="1097.730" data-duration="2.389" data-track-index="2"><div class="cap-in"><b>Ата:</b> Біріншісінде көбіне сарбаздар өлді.</div></div>
+<div id="cap254" class="clip cap ca" data-start="1100.119" data-duration="3.285" data-track-index="2"><div class="cap-in"><b>Ата:</b> Екіншісінде көбіне бейбіт халық қаза тапты.</div></div>
+<div id="cap255" class="clip cap ca" data-start="1104.504" data-duration="3.604" data-track-index="2"><div class="cap-in"><b>Ата:</b> Біріншісі — окоп соғысы, әскерлер бір орында тұрды.</div></div>
+<div id="cap256" class="clip cap ca" data-start="1108.108" data-duration="3.318" data-track-index="2"><div class="cap-in"><b>Ата:</b> Екіншісі — танк пен ұшақтың жылдам соғысы.</div></div>
+<div id="cap257" class="clip cap ca" data-start="1112.526" data-duration="3.106" data-track-index="2"><div class="cap-in"><b>Ата:</b> Біріншісінде улы газ бен алғашқы танк шықты.</div></div>
+<div id="cap258" class="clip cap ca" data-start="1115.632" data-duration="2.750" data-track-index="2"><div class="cap-in"><b>Ата:</b> Екіншісі атом бомбасымен аяқталды.</div></div>
+<div id="cap259" class="clip cap ca" data-start="1119.482" data-duration="4.602" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ал қазақтар үшін: біріншісінде — 1916 жылғы жарлық пен көтеріліс.</div></div>
+<div id="cap260" class="clip cap ca" data-start="1124.084" data-duration="4.032" data-track-index="2"><div class="cap-in"><b>Ата:</b> Екіншісінде — майданға кеткен миллионнан астам адам.</div></div>
+<div id="cap261" class="clip cap ce" data-start="1136.416" data-duration="4.199" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Ата, соғыс неге болады? Адамдар неге тоқтамайды?</div></div>
+<div id="cap262" class="clip cap ca" data-start="1141.015" data-duration="4.152" data-track-index="2"><div class="cap-in"><b>Ата:</b> Соғыс кейбір адамдардың ашкөздігі мен өшпенділігінен басталады.</div></div>
+<div id="cap263" class="clip cap ca" data-start="1145.167" data-duration="3.382" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ал оның ауыртпалығын қарапайым халық көтереді.</div></div>
+<div id="cap264" class="clip cap ca" data-start="1148.949" data-duration="4.789" data-track-index="2"><div class="cap-in"><b>Ата:</b> Біз тарихты соғысты жақсы көру үшін емес, оны қайталамау үшін білуіміз керек.</div></div>
+<div id="cap265" class="clip cap ca" data-start="1154.138" data-duration="3.904" data-track-index="2"><div class="cap-in"><b>Ата:</b> Сенің бабаң бізге бейбіт аспан қалдыру үшін соғысты.</div></div>
+<div id="cap266" class="clip cap ca" data-start="1158.042" data-duration="1.702" data-track-index="2"><div class="cap-in"><b>Ата:</b> Оны ұмытпа, балам.</div></div>
+<div id="cap267" class="clip cap ce" data-start="1160.144" data-duration="1.732" data-track-index="2"><div class="cap-in"><b>Ерлан:</b> Ұмытпаймын, ата.</div></div>
+<div id="cap268" class="clip cap ca" data-start="1162.976" data-duration="3.761" data-track-index="2"><div class="cap-in"><b>Ата:</b> Ешкім ұмытылмайды. Ештеңе ұмытылмайды.</div></div>
+</div>
+<script>
+const tl = gsap.timeline({ paused: true });
+tl.fromTo("#cap0 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},0.000);
+tl.fromTo("#cap1 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},2.234);
+tl.fromTo("#cap2 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},7.035);
+tl.fromTo("#cap3 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},12.521);
+tl.fromTo("#cap4 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},17.429);
+tl.fromTo("#cap5 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},19.730);
+tl.fromTo("#cap6 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},23.317);
+tl.fromTo("#cap7 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},24.182);
+tl.fromTo("#cap8 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},28.682);
+tl.fromTo("#cap9 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},29.774);
+tl.fromTo("#cap10 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},33.556);
+tl.fromTo("#cap11 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},36.813);
+tl.fromTo("#cap12 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},39.229);
+tl.fromTo("#cap13 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},43.380);
+tl.fromTo("#cap14 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},45.521);
+tl.fromTo("#cap15 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},50.948);
+tl.fromTo("#cap16 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},54.927);
+tl.fromTo("#cap17 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},57.453);
+tl.fromTo("#cap18 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},68.899);
+tl.fromTo("#cap19 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},72.631);
+tl.fromTo("#cap20 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},77.195);
+tl.fromTo("#cap21 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},82.957);
+tl.fromTo("#cap22 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},86.203);
+tl.fromTo("#cap23 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},89.226);
+tl.fromTo("#cap24 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},93.064);
+tl.fromTo("#cap25 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},97.953);
+tl.fromTo("#cap26 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},104.168);
+tl.fromTo("#cap27 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},107.162);
+tl.fromTo("#cap28 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},113.211);
+tl.fromTo("#cap29 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},119.174);
+tl.fromTo("#cap30 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},122.590);
+tl.fromTo("#cap31 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},127.516);
+tl.fromTo("#cap32 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},135.768);
+tl.fromTo("#cap33 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},140.749);
+tl.fromTo("#cap34 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},143.871);
+tl.fromTo("#cap35 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},147.248);
+tl.fromTo("#cap36 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},154.431);
+tl.fromTo("#cap37 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},157.164);
+tl.fromTo("#cap38 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},160.934);
+tl.fromTo("#cap39 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},164.538);
+tl.fromTo("#cap40 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},168.310);
+tl.fromTo("#cap41 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},174.518);
+tl.fromTo("#cap42 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},179.220);
+tl.fromTo("#cap43 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},183.497);
+tl.fromTo("#cap44 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},197.856);
+tl.fromTo("#cap45 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},203.776);
+tl.fromTo("#cap46 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},207.824);
+tl.fromTo("#cap47 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},210.069);
+tl.fromTo("#cap48 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},212.910);
+tl.fromTo("#cap49 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},216.673);
+tl.fromTo("#cap50 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},219.668);
+tl.fromTo("#cap51 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},225.677);
+tl.fromTo("#cap52 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},230.427);
+tl.fromTo("#cap53 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},234.836);
+tl.fromTo("#cap54 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},239.572);
+tl.fromTo("#cap55 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},243.906);
+tl.fromTo("#cap56 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},248.539);
+tl.fromTo("#cap57 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},250.708);
+tl.fromTo("#cap58 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},254.925);
+tl.fromTo("#cap59 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},259.300);
+tl.fromTo("#cap60 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},261.800);
+tl.fromTo("#cap61 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},264.976);
+tl.fromTo("#cap62 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},265.785);
+tl.fromTo("#cap63 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},271.360);
+tl.fromTo("#cap64 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},275.602);
+tl.fromTo("#cap65 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},279.156);
+tl.fromTo("#cap66 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},281.502);
+tl.fromTo("#cap67 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},292.869);
+tl.fromTo("#cap68 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},295.731);
+tl.fromTo("#cap69 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},300.558);
+tl.fromTo("#cap70 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},306.240);
+tl.fromTo("#cap71 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},311.327);
+tl.fromTo("#cap72 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},313.531);
+tl.fromTo("#cap73 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},316.235);
+tl.fromTo("#cap74 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},321.653);
+tl.fromTo("#cap75 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},327.500);
+tl.fromTo("#cap76 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},330.399);
+tl.fromTo("#cap77 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},334.272);
+tl.fromTo("#cap78 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},336.820);
+tl.fromTo("#cap79 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},340.500);
+tl.fromTo("#cap80 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},343.927);
+tl.fromTo("#cap81 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},347.535);
+tl.fromTo("#cap82 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},351.773);
+tl.fromTo("#cap83 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},356.073);
+tl.fromTo("#cap84 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},358.479);
+tl.fromTo("#cap85 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},364.944);
+tl.fromTo("#cap86 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},369.344);
+tl.fromTo("#cap87 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},372.507);
+tl.fromTo("#cap88 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},383.792);
+tl.fromTo("#cap89 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},388.414);
+tl.fromTo("#cap90 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},393.366);
+tl.fromTo("#cap91 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},396.196);
+tl.fromTo("#cap92 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},399.506);
+tl.fromTo("#cap93 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},401.351);
+tl.fromTo("#cap94 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},405.057);
+tl.fromTo("#cap95 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},411.311);
+tl.fromTo("#cap96 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},416.448);
+tl.fromTo("#cap97 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},418.934);
+tl.fromTo("#cap98 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},423.976);
+tl.fromTo("#cap99 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},426.703);
+tl.fromTo("#cap100 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},430.502);
+tl.fromTo("#cap101 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},433.546);
+tl.fromTo("#cap102 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},440.239);
+tl.fromTo("#cap103 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},445.960);
+tl.fromTo("#cap104 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},447.312);
+tl.fromTo("#cap105 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},452.408);
+tl.fromTo("#cap106 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},454.637);
+tl.fromTo("#cap107 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},458.312);
+tl.fromTo("#cap108 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},461.933);
+tl.fromTo("#cap109 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},466.234);
+tl.fromTo("#cap110 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},470.970);
+tl.fromTo("#cap111 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},474.858);
+tl.fromTo("#cap112 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},478.505);
+tl.fromTo("#cap113 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},482.067);
+tl.fromTo("#cap114 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},486.939);
+tl.fromTo("#cap115 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},501.057);
+tl.fromTo("#cap116 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},506.045);
+tl.fromTo("#cap117 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},510.128);
+tl.fromTo("#cap118 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},514.372);
+tl.fromTo("#cap119 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},519.077);
+tl.fromTo("#cap120 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},524.255);
+tl.fromTo("#cap121 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},528.121);
+tl.fromTo("#cap122 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},532.204);
+tl.fromTo("#cap123 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},538.430);
+tl.fromTo("#cap124 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},544.108);
+tl.fromTo("#cap125 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},549.039);
+tl.fromTo("#cap126 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},553.901);
+tl.fromTo("#cap127 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},557.821);
+tl.fromTo("#cap128 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},565.293);
+tl.fromTo("#cap129 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},568.562);
+tl.fromTo("#cap130 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},571.647);
+tl.fromTo("#cap131 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},576.589);
+tl.fromTo("#cap132 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},578.986);
+tl.fromTo("#cap133 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},582.317);
+tl.fromTo("#cap134 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},586.163);
+tl.fromTo("#cap135 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},599.381);
+tl.fromTo("#cap136 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},603.990);
+tl.fromTo("#cap137 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},607.479);
+tl.fromTo("#cap138 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},611.695);
+tl.fromTo("#cap139 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},616.381);
+tl.fromTo("#cap140 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},622.570);
+tl.fromTo("#cap141 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},628.076);
+tl.fromTo("#cap142 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},634.245);
+tl.fromTo("#cap143 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},635.700);
+tl.fromTo("#cap144 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},641.016);
+tl.fromTo("#cap145 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},644.481);
+tl.fromTo("#cap146 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},648.695);
+tl.fromTo("#cap147 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},653.452);
+tl.fromTo("#cap148 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},655.609);
+tl.fromTo("#cap149 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},660.183);
+tl.fromTo("#cap150 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},661.681);
+tl.fromTo("#cap151 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},667.476);
+tl.fromTo("#cap152 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},672.259);
+tl.fromTo("#cap153 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},673.392);
+tl.fromTo("#cap154 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},679.014);
+tl.fromTo("#cap155 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},682.784);
+tl.fromTo("#cap156 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},686.961);
+tl.fromTo("#cap157 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},692.222);
+tl.fromTo("#cap158 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},694.659);
+tl.fromTo("#cap159 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},697.653);
+tl.fromTo("#cap160 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},700.559);
+tl.fromTo("#cap161 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},708.057);
+tl.fromTo("#cap162 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},710.658);
+tl.fromTo("#cap163 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},714.708);
+tl.fromTo("#cap164 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},717.947);
+tl.fromTo("#cap165 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},730.002);
+tl.fromTo("#cap166 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},732.493);
+tl.fromTo("#cap167 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},736.232);
+tl.fromTo("#cap168 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},740.559);
+tl.fromTo("#cap169 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},745.939);
+tl.fromTo("#cap170 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},751.187);
+tl.fromTo("#cap171 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},754.564);
+tl.fromTo("#cap172 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},756.257);
+tl.fromTo("#cap173 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},760.392);
+tl.fromTo("#cap174 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},765.482);
+tl.fromTo("#cap175 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},767.505);
+tl.fromTo("#cap176 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},771.169);
+tl.fromTo("#cap177 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},775.134);
+tl.fromTo("#cap178 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},779.743);
+tl.fromTo("#cap179 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},785.987);
+tl.fromTo("#cap180 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},788.262);
+tl.fromTo("#cap181 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},801.391);
+tl.fromTo("#cap182 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},806.340);
+tl.fromTo("#cap183 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},811.704);
+tl.fromTo("#cap184 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},816.616);
+tl.fromTo("#cap185 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},820.177);
+tl.fromTo("#cap186 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},823.976);
+tl.fromTo("#cap187 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},825.638);
+tl.fromTo("#cap188 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},830.205);
+tl.fromTo("#cap189 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},834.763);
+tl.fromTo("#cap190 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},839.357);
+tl.fromTo("#cap191 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},840.673);
+tl.fromTo("#cap192 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},843.394);
+tl.fromTo("#cap193 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},847.088);
+tl.fromTo("#cap194 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},852.459);
+tl.fromTo("#cap195 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},857.248);
+tl.fromTo("#cap196 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},861.350);
+tl.fromTo("#cap197 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},868.170);
+tl.fromTo("#cap198 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},872.111);
+tl.fromTo("#cap199 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},876.570);
+tl.fromTo("#cap200 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},879.067);
+tl.fromTo("#cap201 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},883.679);
+tl.fromTo("#cap202 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},886.172);
+tl.fromTo("#cap203 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},893.466);
+tl.fromTo("#cap204 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},895.456);
+tl.fromTo("#cap205 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},900.121);
+tl.fromTo("#cap206 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},901.832);
+tl.fromTo("#cap207 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},907.744);
+tl.fromTo("#cap208 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},914.199);
+tl.fromTo("#cap209 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},919.002);
+tl.fromTo("#cap210 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},922.647);
+tl.fromTo("#cap211 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},927.190);
+tl.fromTo("#cap212 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},930.517);
+tl.fromTo("#cap213 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},935.764);
+tl.fromTo("#cap214 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},940.277);
+tl.fromTo("#cap215 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},942.316);
+tl.fromTo("#cap216 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},947.558);
+tl.fromTo("#cap217 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},951.395);
+tl.fromTo("#cap218 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},954.369);
+tl.fromTo("#cap219 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},958.409);
+tl.fromTo("#cap220 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},963.551);
+tl.fromTo("#cap221 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},972.602);
+tl.fromTo("#cap222 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},976.069);
+tl.fromTo("#cap223 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},981.339);
+tl.fromTo("#cap224 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},985.458);
+tl.fromTo("#cap225 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},989.335);
+tl.fromTo("#cap226 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},993.183);
+tl.fromTo("#cap227 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},995.907);
+tl.fromTo("#cap228 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1000.936);
+tl.fromTo("#cap229 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1003.015);
+tl.fromTo("#cap230 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1004.353);
+tl.fromTo("#cap231 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1008.365);
+tl.fromTo("#cap232 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1010.389);
+tl.fromTo("#cap233 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1014.958);
+tl.fromTo("#cap234 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1017.463);
+tl.fromTo("#cap235 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1020.469);
+tl.fromTo("#cap236 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1024.288);
+tl.fromTo("#cap237 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1026.058);
+tl.fromTo("#cap238 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1031.230);
+tl.fromTo("#cap239 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1034.118);
+tl.fromTo("#cap240 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1036.813);
+tl.fromTo("#cap241 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1040.666);
+tl.fromTo("#cap242 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1041.189);
+tl.fromTo("#cap243 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1047.391);
+tl.fromTo("#cap244 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1051.610);
+tl.fromTo("#cap245 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1053.105);
+tl.fromTo("#cap246 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1055.803);
+tl.fromTo("#cap247 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1066.370);
+tl.fromTo("#cap248 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1070.430);
+tl.fromTo("#cap249 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1076.888);
+tl.fromTo("#cap250 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1083.466);
+tl.fromTo("#cap251 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1089.347);
+tl.fromTo("#cap252 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1092.729);
+tl.fromTo("#cap253 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1097.730);
+tl.fromTo("#cap254 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1100.119);
+tl.fromTo("#cap255 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1104.504);
+tl.fromTo("#cap256 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1108.108);
+tl.fromTo("#cap257 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1112.526);
+tl.fromTo("#cap258 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1115.632);
+tl.fromTo("#cap259 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1119.482);
+tl.fromTo("#cap260 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1124.084);
+tl.fromTo("#cap261 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1136.416);
+tl.fromTo("#cap262 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1141.015);
+tl.fromTo("#cap263 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1145.167);
+tl.fromTo("#cap264 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1148.949);
+tl.fromTo("#cap265 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1154.138);
+tl.fromTo("#cap266 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1158.042);
+tl.fromTo("#cap267 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1160.144);
+tl.fromTo("#cap268 .cap-in",{opacity:0,y:10},{opacity:1,y:0,duration:0.18},1162.976);
+window.__timelines["captions"] = tl;
+</script>
+</template>

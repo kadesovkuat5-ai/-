@@ -1,0 +1,6 @@
+# Generated, large or local-only: rebuild with tools/tts.py and tools/music.py
+assets/voice/
+assets/music/
+renders/
+.hyperframes/
+node_modules/
