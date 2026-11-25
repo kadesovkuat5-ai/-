@@ -4,7 +4,7 @@
 Казахская кириллица: Ә ә, Ғ ғ, Қ қ, Ң ң, Ө ө, Ұ ұ, Ү ү, Һ һ, І і. Каждый шрифт обязан содержать **все** эти знаки.
 - Перед сборкой проверь тестовой строкой: `Әә Ғғ Ққ Ңң Өө Ұұ Үү Һһ Іі — Қазақстан, Өскемен, Шымкент`.
 - Если знака нет, браузер подставит другой шрифт — буква «прыгнет». Это брак: меняй шрифт.
-- Надёжные шрифты с казахской кириллицей (Google Fonts, OFL): Inter, Inter Tight, Montserrat, Roboto, Roboto Condensed, Noto Sans, Noto Serif, PT Sans, PT Serif, Golos Text, Unbounded, Manrope (каждый всё равно проверь тестовой строкой). Подключай через `@font-face` из `assets/fonts/` (контракт HyperFrames, п. 9).
+- Проверенные шрифты лежат в репозитории в `fonts/` (все знаки есть): Montserrat, Oswald, Inter, Rubik, Noto Serif — см. `fonts/README.md`. Также подходят Roboto Condensed, Golos Text, PT Sans. **Не подходят** (нет казахских знаков): Unbounded, Manrope. Подключай через `@font-face` из `assets/fonts/` (контракт HyperFrames, п. 9).
 - Не путать: казахская «І і» (U+0406/U+0456), а не латинская I; «Һ» — U+04BA.
 
 ## Анимация по буквам

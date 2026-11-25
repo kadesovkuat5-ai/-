@@ -30,3 +30,9 @@ When the user sends raw footage:
 - Then `pip install opencv-python-headless google-genai openai-whisper`,
   `python3 ~/.claude/skills/ghost-editor/scripts/library_restore.py` (SFX + music, git-ignored) and check with `scripts/doctor.sh`.
 - Built for macOS; on Linux the macOS-only caption text check is unavailable. Gemini key is optional (B-roll checks).
+
+## Other video skills in `.claude/skills/`
+- **HyperFrames** (`hyperframes*`, `media-use`, `reverse-any-video`, `style-sampling`, `figma`, `slideshow`, `remotion-to-hyperframes`): HTML → video.
+- **Remotion** (`remotion-*`, from remotion-dev/skills): React → video. Free for individuals and companies of up to 3 people.
+- **kadeshov-motion**: the user's own motion-graphics skill (kinetic type, titles over Seedance clips). `references/styles.md` is still an empty template.
+- **Fonts:** `fonts/` holds OFL fonts checked for full Kazakh Cyrillic (Montserrat, Oswald, Inter, Rubik, Noto Serif). Use these for kk text.
