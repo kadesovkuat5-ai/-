@@ -311,6 +311,7 @@ def cmd_plan(args) -> None:
         "title": args.title or "My Reel",
         "hook_text": args.hook or "",
         "hook_seconds": 2.5,
+        "hook_position": "top",
         "clips": clips,
         "music": {"file": args.music or "", "volume": 0.18, "start_in_track": 0.0,
                   "fade_in": 0.5, "fade_out": 1.5, "duck_under_voice": True,
@@ -359,7 +360,7 @@ def caption_chunks(timeline: list, cfg: dict) -> list:
     per = max(1, int(cfg.get("words_per_caption", 3)))
     chunks, cur = [], []
     for w in words:
-        if cur and (len(cur) >= per or w["start"] - cur[-1]["end"] > 0.4 or w["end"] - cur[0]["start"] > 1.8):
+        if cur and not w["text"].startswith("-") and (len(cur) >= per or w["start"] - cur[-1]["end"] > 0.4 or w["end"] - cur[0]["start"] > 1.8):
             chunks.append(cur)
             cur = []
         cur.append(w)
@@ -369,7 +370,8 @@ def caption_chunks(timeline: list, cfg: dict) -> list:
     if cur:
         chunks.append(cur)
     caps = [{"start": ch[0]["start"], "end": max(ch[-1]["end"], ch[0]["start"] + 0.45),
-             "text": " ".join(x["text"] for x in ch).strip()} for ch in chunks]
+             # Whisper splits hyphenated words ("из" + "-за"): glue a leading hyphen to the previous word
+             "text": re.sub(r"\s+-(?=\w)", "-", " ".join(x["text"] for x in ch)).strip()} for ch in chunks]
     for a, b in zip(caps, caps[1:]):          # no overlaps, no tiny flicker gaps
         if b["start"] - a["end"] < 0.25:
             a["end"] = b["start"]
@@ -381,8 +383,12 @@ def ass_escape(text: str) -> str:
     return text.replace("\\", "/").replace("{", "(").replace("}", ")").replace("\n", "\\N")
 
 
-def write_ass(path: Path, caps: list, hook: str, hook_secs: float, position: str) -> None:
-    margin = {"lower": 560, "middle": 900, "upper": 1300}.get(position, 560)
+def write_ass(path: Path, caps: list, hook: str, hook_secs: float, position: str,
+              hook_position: str = "top") -> None:
+    # caption distance from the bottom edge; "bottom" sits just above the Reels UI (keeps logos on the chest free)
+    margin = {"bottom": 420, "lower": 560, "middle": 900, "upper": 1300}.get(position, 560)
+    # hook: "top" (under the Reels header) or "chest" (below the face, for close talking heads)
+    hook_align, hook_margin = {"top": (8, 330), "chest": (2, 780)}.get(hook_position, (8, 330))
     lines = [
         "[Script Info]", "ScriptType: v4.00+", f"PlayResX: {W}", f"PlayResY: {H}",
         "WrapStyle: 0", "ScaledBorderAndShadow: yes", "",
@@ -390,8 +396,9 @@ def write_ass(path: Path, caps: list, hook: str, hook_secs: float, position: str
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, "
         "Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, "
         "Alignment, MarginL, MarginR, MarginV, Encoding",
-        f"Style: Cap,DejaVu Sans,76,&H00FFFFFF,&H000000FF,&H00000000,&H78000000,-1,0,0,0,100,100,0,0,1,7,3,2,90,90,{margin},1",
-        "Style: Hook,DejaVu Sans,84,&H00000000,&H000000FF,&H0000D6FF,&H0000D6FF,-1,0,0,0,100,100,0,0,3,22,0,8,80,80,330,1",
+        f"Style: Cap,Montserrat,74,&H00FFFFFF,&H000000FF,&H00000000,&H78000000,-1,0,0,0,100,100,0,0,1,7,3,2,90,90,{margin},1",
+        "Style: Hook,Montserrat,80,&H00000000,&H000000FF,&H0000D6FF,&H0000D6FF,-1,0,0,0,100,100,0,0,3,22,0,"
+        f"{hook_align},80,80,{hook_margin},1",
         "", "[Events]",
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
     ]
@@ -566,7 +573,8 @@ def cmd_build(args) -> None:
     (d_subs / "transcript.txt").write_text(" ".join(c["text"] for c in caps) + "\n", encoding="utf-8")
     hook = plan.get("hook_text", "")
     hook_secs = min(float(plan.get("hook_seconds", 2.5)), total)
-    write_ass(tmp / "subs.ass", caps, hook, hook_secs, cap_cfg.get("position", "lower"))
+    write_ass(tmp / "subs.ass", caps, hook, hook_secs, cap_cfg.get("position", "lower"),
+              plan.get("hook_position", "top"))
     if caps or hook:
         log("Subtitles: green-screen overlay for CapCut")
         run_in(tmp, ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i",
