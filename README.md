@@ -8,6 +8,8 @@ This project has two tools:
    → Step-by-step guide (Kazakh): [docs/WORKFLOW.md](docs/WORKFLOW.md)
    → Can a real CapCut project be generated? [docs/CAPCUT_DRAFT_RESEARCH.md](docs/CAPCUT_DRAFT_RESEARCH.md)
 2. **ReelMate web app** (`index.html`): a simple in-browser editor (described below).
+3. **Qalta** (`qalta/`): an installable phone app (PWA) for small businesses (clinic, dentist, car service,
+   shop…) with staff roles, a client base, income/expenses, tax and a monthly report. See [qalta/README.md](qalta/README.md).
 
 > The preview MP4 is a finished, flat video. It is **not** an editable project.
 

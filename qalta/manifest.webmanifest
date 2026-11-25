@@ -1,0 +1,16 @@
+{
+  "name": "Qalta – бизнес дәптері",
+  "short_name": "Qalta",
+  "description": "Клиенттер, қабылдау, кіріс-шығыс, салық және ай сайынғы есеп",
+  "lang": "kk",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0b12",
+  "theme_color": "#0b0b12",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
