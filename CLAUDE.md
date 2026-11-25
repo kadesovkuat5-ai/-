@@ -35,4 +35,4 @@ When the user sends raw footage:
 - **HyperFrames** (`hyperframes*`, `media-use`, `reverse-any-video`, `style-sampling`, `figma`, `slideshow`, `remotion-to-hyperframes`): HTML → video.
 - **Remotion** (`remotion-*`, from remotion-dev/skills): React → video. Free for individuals and companies of up to 3 people.
 - **kadeshov-motion**: the user's own motion-graphics skill (kinetic type, titles over Seedance clips). `references/styles.md` is still an empty template.
-- **Fonts:** `fonts/` holds OFL fonts checked for full Kazakh Cyrillic (Montserrat, Oswald, Inter, Rubik, Noto Serif). Use these for kk text.
+- **Fonts:** `fonts/` holds OFL fonts checked for full Kazakh Cyrillic (14 families, see `fonts/README.md` and `fonts/preview.png`). Use these for kk text. Not suitable: Unbounded, Manrope, Jost, Russo One.
