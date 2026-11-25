@@ -30,6 +30,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 SFX_DIR = HERE / "sfx"
+STICKER_DIR = HERE / "stickers"
 WORK = ROOT / "work"
 OUTPUT = ROOT / "output"
 W, H, FPS = 1080, 1920, 30
@@ -384,7 +385,7 @@ def ass_escape(text: str) -> str:
 
 
 def write_ass(path: Path, caps: list, hook: str, hook_secs: float, position: str,
-              hook_position: str = "top") -> None:
+              hook_position: str = "top", highlight: list | None = None) -> None:
     # caption distance from the bottom edge; "bottom" sits just above the Reels UI (keeps logos on the chest free)
     margin = {"bottom": 420, "lower": 560, "middle": 900, "upper": 1300}.get(position, 560)
     # hook: "top" (under the Reels header) or "chest" (below the face, for close talking heads)
@@ -402,10 +403,16 @@ def write_ass(path: Path, caps: list, hook: str, hook_secs: float, position: str
         "", "[Events]",
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
     ]
-    if hook:
-        lines.append(f"Dialogue: 1,{ass_time(0)},{ass_time(hook_secs)},Hook,,0,0,0,,{ass_escape(hook)}")
+    if hook:   # pops in with a bounce, fades out
+        anim = r"{\fad(120,350)\fscx60\fscy60\t(0,180,\fscx110\fscy110)\t(180,300,\fscx100\fscy100)}"
+        lines.append(f"Dialogue: 1,{ass_time(0)},{ass_time(hook_secs)},Hook,,0,0,0,,{anim}{ass_escape(hook)}")
+    pop = r"{\fscx86\fscy86\t(0,110,\fscx100\fscy100)}"
     for c in caps:
-        lines.append(f"Dialogue: 0,{ass_time(c['start'])},{ass_time(c['end'])},Cap,,0,0,0,,{ass_escape(c['text'])}")
+        text = ass_escape(c["text"])
+        for kw in highlight or []:   # key words: yellow and slightly bigger
+            text = re.sub(rf"(?i)(?<!\w)({re.escape(ass_escape(kw))}\w*)",
+                          lambda m: r"{\c&H00D6FF&\fscx112\fscy112}" + m.group(1) + r"{\r}", text)
+        lines.append(f"Dialogue: 0,{ass_time(c['start'])},{ass_time(c['end'])},Cap,,0,0,0,,{pop}{text}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -426,8 +433,14 @@ def frame_filter(c: dict) -> str:
              f"[fg]scale={zw}:{zh}:force_original_aspect_ratio=decrease[f];"
              f"[b][f]overlay=(W-w)/2:(H-h)/2")
     fades = ""
-    if c.get("transition_in") == "fade":
+    tr = c.get("transition_in", "cut")
+    if tr == "fade":
         fades += ",fade=t=in:st=0:d=0.25"
+    if tr in ("zoom", "zoomflash"):   # punch-in: starts 22% closer and settles in 0.35 s
+        fades += (f",scale=w='{W}*(1+0.22*pow(max(0,1-t/0.35),2))':h=-2:eval=frame,"
+                  f"crop={W}:{H}")
+    if tr in ("flash", "zoomflash"):  # quick white flash
+        fades += ",fade=t=in:st=0:d=0.18:color=white"
     if c.get("_fade_out"):
         fades += f",fade=t=out:st={max(0, c['dur'] - 0.35):.3f}:d=0.35"
     return f"{v},fps={FPS},tpad=stop_mode=clone:stop_duration=1,setsar=1,format=yuv420p{fades}[v]"
@@ -463,6 +476,36 @@ def render_preview_segment(c: dict, vid: Path, wav: Path) -> None:
          "-map", "[v]", "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "16",
          "-frames:v", str(round(c["dur"] * FPS)), vid,
          "-map", "[a]", "-c:a", "pcm_s16le", wav])
+
+
+def render_sticker(png: Path, seq: Path, s: dict) -> int:
+    """PNG sequence of one animated sticker on a fixed transparent square; returns the square's size.
+    anim: pop (bounce in, wobble, fade out) | pull (bounce in, then lifted up and out, like an extraction)."""
+    from PIL import Image
+    import math
+    seq.mkdir(parents=True, exist_ok=True)
+    size, dur, anim = int(s.get("size", 260)), float(s.get("dur", 1.5)), s.get("anim", "pop")
+    box = int(size * 1.6) // 2 * 2
+    img = Image.open(png).convert("RGBA")
+    n = max(1, round(dur * FPS))
+    for i in range(n):
+        t = i / FPS
+        sc = (1.18 * t / 0.16 if t < 0.16 else 1.18 - 0.18 * min(1, (t - 0.16) / 0.12))   # bounce in
+        ang = 7 * math.sin(2 * math.pi * 1.4 * t)                                           # gentle wobble
+        dy, alpha = 0.0, 1.0
+        out = max(0.0, t - (dur - 0.35)) / 0.35                                             # last 0.35 s
+        if anim == "pull":
+            dy, alpha = -0.25 * box * out ** 2, 1 - out
+        else:
+            sc, alpha = sc * (1 - 0.3 * out), 1 - out
+        w = max(1, int(size * max(sc, 0.01)))
+        st = img.resize((w, w), Image.LANCZOS).rotate(ang, resample=Image.BICUBIC, expand=True)
+        if alpha < 1:
+            st.putalpha(st.getchannel("A").point(lambda a: int(a * alpha)))
+        frame = Image.new("RGBA", (box, box), (0, 0, 0, 0))
+        frame.alpha_composite(st, ((box - st.width) // 2, int((box - st.height) // 2 + dy)))
+        frame.save(seq / f"{i + 1:04d}.png")
+    return box
 
 
 def concat(files: list, dst: Path, extra: list) -> None:
@@ -518,10 +561,13 @@ def cmd_build(args) -> None:
 
     # --- 2) audio stems: voice, music, sound effects, full mix
     log("Audio: voice, music, sound effects, mix")
-    run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", voice_wav, "-c:a", "aac", "-b:a", "256k",
+    # speech level for Reels: phone/lav recordings are often far too quiet (−30…−40 LUFS)
+    vnorm = "loudnorm=I=-16:TP=-1.5:LRA=11," if plan.get("voice_normalize", True) else ""
+    run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", voice_wav,
+         *(["-af", vnorm.rstrip(",")] if vnorm else []), "-c:a", "aac", "-b:a", "256k",
          d_audio / "voice_original_sound.m4a"])
     inputs, chains, mix = ["-i", voice_wav], [], ["[voice]"]
-    chains.append("[0:a]asplit=2[voice][sc]")
+    chains.append(f"[0:a]{vnorm}aresample=48000,asplit=2[voice][sc]")
     music = plan.get("music", {})
     music_path = None
     if music.get("file"):
@@ -574,7 +620,7 @@ def cmd_build(args) -> None:
     hook = plan.get("hook_text", "")
     hook_secs = min(float(plan.get("hook_seconds", 2.5)), total)
     write_ass(tmp / "subs.ass", caps, hook, hook_secs, cap_cfg.get("position", "lower"),
-              plan.get("hook_position", "top"))
+              plan.get("hook_position", "top"), cap_cfg.get("highlight", []))
     if caps or hook:
         log("Subtitles: green-screen overlay for CapCut")
         run_in(tmp, ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i",
@@ -582,12 +628,39 @@ def cmd_build(args) -> None:
                      "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
                      (d_subs / "captions_greenscreen_overlay.mp4").resolve()])
 
+    # --- 3b) animated stickers (PNG + its own green-screen overlay for CapCut)
+    stickers = plan.get("stickers", [])
+    st_inputs, st_chain = [], ""
+    if stickers:
+        log("Stickers: animated overlays")
+        d_st = kit / "6_stickers"
+        d_st.mkdir()
+        for k, s in enumerate(stickers):
+            png = STICKER_DIR / f"{s['name']}.png"
+            if not png.exists():
+                raise SystemExit(f"Sticker not found: {png}")
+            shutil.copy(png, d_st / png.name)
+            seq = tmp / f"st{k}"
+            box = render_sticker(png, seq, s)
+            x = int(float(s.get("x", 0.8)) * W - box / 2)
+            y = int(float(s.get("y", 0.3)) * H - box / 2)
+            st_inputs += ["-framerate", str(FPS), "-i", (seq / "%04d.png").resolve()]
+            st_chain += (f"[{k + 2}:v]setpts=PTS-STARTPTS+{float(s['at']):.3f}/TB[st{k}];"
+                         f"[vs{k}][st{k}]overlay={x}:{y}:eof_action=pass[vs{k + 1}];")
+        green = tmp / "green.mp4"
+        run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i",
+             f"color=c=0x00FF00:s={W}x{H}:r={FPS}:d={total:.3f}", "-f", "lavfi", "-i", "anullsrc",
+             *st_inputs, "-filter_complex", f"[0:v]null[vs0];{st_chain}[vs{len(stickers)}]null[v]",
+             "-map", "[v]", "-t", f"{total:.3f}", "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p",
+             "-movflags", "+faststart", d_st / "stickers_greenscreen_overlay.mp4"])
+
     # --- 4) preview MP4 (flat video – NOT an editable project)
     log("Preview: rendering the finished MP4")
     preview = d_prev / f"{name}_PREVIEW_9x16.mp4"
-    vf = ["-vf", "ass=subs.ass"] if (caps or hook) else []
+    subs = ",ass=subs.ass" if (caps or hook) else ""
+    fc = f"[0:v]null[vs0];{st_chain}[vs{len(stickers)}]null{subs}[v]"
     run_in(tmp, ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", video_only, "-i", mix_wav,
-                 *vf, "-map", "0:v", "-map", "1:a", "-c:v", "libx264", "-preset", "medium", "-crf", "19",
+                 *st_inputs, "-filter_complex", fc, "-map", "[v]", "-map", "1:a", "-c:v", "libx264", "-preset", "medium", "-crf", "19",
                  "-pix_fmt", "yuv420p", "-r", str(FPS), "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart",
                  "-shortest", preview.resolve()])
     no_text = d_prev / f"{name}_PREVIEW_no_text_9x16.mp4"
@@ -617,7 +690,9 @@ def cmd_build(args) -> None:
 # timeline documents
 # ----------------------------------------------------------------------------
 FRAMING_KK = {"fill": "Толтыру (кесу) / Fill", "blur": "Бұлдыр фон / Blur background"}
-TRANS_KK = {"cut": "Кесу / Cut", "fade": "Қараңғылану / Fade (0.25s)"}
+TRANS_KK = {"cut": "Кесу / Cut", "fade": "Қараңғылану / Fade (0.25s)",
+            "zoom": "Жақындау / Zoom in (0.35s)", "flash": "Ақ жарқыл / Flash (0.18s)",
+            "zoomflash": "Жақындау + жарқыл / Zoom + Flash"}
 
 
 def write_timeline(d_tl, kit, plan, timeline, caps, sfx_rows, music_path, total, name) -> None:
@@ -698,6 +773,13 @@ def write_timeline(d_tl, kit, plan, timeline, caps, sfx_rows, music_path, total,
               f"{s.get('why', '')} |" for k, s in enumerate(sfx_rows, 1)]
     else:
         L.append("- Жоқ / None")
+    if plan.get("stickers"):
+        L += ["", "## 🦷 Стикерлер / Stickers (`6_stickers/`)", "",
+              "PNG-ді CapCut-та «Наложение / Overlay» арқылы қосыңыз, немесе дайын анимацияны "
+              "`stickers_greenscreen_overlay.mp4` (жасыл фон → «Удалить фон / Chroma key») арқылы қойыңыз.", "",
+              "| # | Уақыт / At | Ұзақтығы | Анимация | Неге / Why |", "|---|---|---|---|---|"]
+        L += [f"| {k} | {tc(float(s['at']))} | {float(s.get('dur', 1.5)):.1f}s | {s.get('anim', 'pop')} | {s.get('why', '')} |"
+              for k, s in enumerate(plan["stickers"], 1)]
     L += ["", "## 💬 Субтитрлер / Captions", ""]
     if caps:
         L += ["| # | Басталуы | Аяқталуы | Мәтін / Text |", "|---|---|---|---|"]
