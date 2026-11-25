@@ -23,3 +23,16 @@ When the user sends raw footage:
 - Only use sound effects from `reelkit/sfx/` (Pixabay licence) or files the user provides.
 - The Whisper model downloads from huggingface.co. `HF_HUB_DISABLE_XET=1` is set inside the script.
 - `input/`, `work/` and `output/` are git-ignored. Do not commit footage.
+
+## ghost-editor (`.claude/skills/ghost-editor`, from github.com/kurbaitaev/ghost-editor @ d71bdb6)
+- The skill expects to live at `~/.claude/skills/ghost-editor`. In a fresh cloud session, first run:
+  `mkdir -p ~/.claude/skills && ln -sfn "$PWD/.claude/skills/ghost-editor" ~/.claude/skills/ghost-editor`
+- Then `pip install opencv-python-headless google-genai openai-whisper`,
+  `python3 ~/.claude/skills/ghost-editor/scripts/library_restore.py` (SFX + music, git-ignored) and check with `scripts/doctor.sh`.
+- Built for macOS; on Linux the macOS-only caption text check is unavailable. Gemini key is optional (B-roll checks).
+
+## Other video skills in `.claude/skills/`
+- **HyperFrames** (`hyperframes*`, `media-use`, `reverse-any-video`, `style-sampling`, `figma`, `slideshow`, `remotion-to-hyperframes`): HTML → video.
+- **Remotion** (`remotion-*`, from remotion-dev/skills): React → video. Free for individuals and companies of up to 3 people.
+- **kadeshov-motion**: the user's own motion-graphics skill (kinetic type, titles over Seedance clips). `references/styles.md` is still an empty template.
+- **Fonts:** `fonts/` holds OFL fonts checked for full Kazakh Cyrillic (14 families, see `fonts/README.md` and `fonts/preview.png`). Use these for kk text. Not suitable: Unbounded, Manrope, Jost, Russo One.

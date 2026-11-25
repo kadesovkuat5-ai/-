@@ -25,10 +25,31 @@
 
 import "../../scripts/lib/windows-exe-search.mjs";
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import {
+  accessSync,
+  closeSync,
+  constants,
+  fchmodSync,
+  lstatSync,
+  openSync,
+  realpathSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import * as carveApi from "./lib/audio-carve.mjs";
 import { isMainModule } from "./lib/main-module.mjs";
+import {
+  ACCEPTED_CONTAINERS,
+  isIndirectFormat,
+  pinnedInput,
+  probeFormat,
+} from "./lib/media-input.mjs";
+import { isPlainProjectPath, projectPath } from "./lib/project-path.mjs";
+import { assertLiteralMediaPath } from "../../scripts/lib/literal-media-input.mjs";
+import { replaceFileWith } from "../../scripts/lib/link-safe-write.mjs";
+import { readRegularFile } from "../../scripts/lib/recipe-store.mjs";
 
 /** Sample rate the analysis runs at. Matches Studio's own decode rate, so the
  *  bands and envelopes come out the same either way. */
@@ -169,8 +190,43 @@ export function groupSourceRefusal(voices, bed, members) {
   return strays.length > 0 ? { group, reason: "mixed", ids: strays } : null;
 }
 
-/** Mono float PCM for one media file, via ffmpeg. */
+// A URL scheme, or a Windows drive name such as `C:` that a relative-looking name can start with.
+const SCHEME_OR_DRIVE = /^[a-z][a-z0-9+.-]*:/i;
+
+/**
+ * The file a composition's media `src` names. Only a relative name that lands on a regular file inside the
+ * composition's folder, with links resolved, is accepted. Absolute, UNC, drive, URL and climbing names, and
+ * files the project keeps private, throw before anything opens them.
+ */
+export function mediaSource(compDir, src) {
+  const shown = JSON.stringify(src);
+  const path = SCHEME_OR_DRIVE.test(src) ? null : projectPath(compDir, src);
+  if (!path) {
+    throw new Error(
+      `media ${shown} is outside the composition's folder; copy it into the project and name it from there`,
+    );
+  }
+  const rel = relative(realpathSync(compDir), path).split(sep).join("/");
+  if (carveApi.isStudioPrivatePath(src) || carveApi.isStudioPrivatePath(rel)) {
+    throw new Error(`media ${shown} is a private project file, so carve does not read it`);
+  }
+  if (!statSync(path, { throwIfNoEntry: false })?.isFile()) {
+    throw new Error(`media ${shown} is not a file in the project`);
+  }
+  assertLiteralMediaPath(path);
+  return path;
+}
+
+/** Mono float PCM for one media file, via ffmpeg reading that file alone. */
 function decode(path) {
+  const format = probeFormat(path);
+  if (!format)
+    fail(
+      `could not decode ${path}: it is not media in an accepted container (${ACCEPTED_CONTAINERS})`,
+    );
+  if (isIndirectFormat(format)) {
+    fail(`${path} is a ${format} list that points at other files; give the media file itself`);
+  }
   let raw;
   try {
     raw = execFileSync(
@@ -178,8 +234,7 @@ function decode(path) {
       [
         "-v",
         "error",
-        "-i",
-        path,
+        ...pinnedInput(format, path),
         "-vn",
         "-ac",
         "1",
@@ -308,12 +363,66 @@ const startOf = (tag) => {
   return Number.isFinite(raw) ? raw : 0;
 };
 
+/**
+ * The composition's HTML. Throws when the name is a link or not a regular file, or when a folder
+ * between the working folder and it is a link: a received project could point either at a file
+ * outside the project, and the carve would read that file and write it back changed.
+ */
+export function readComposition(compPath, from = process.cwd()) {
+  const rel = relative(from, compPath);
+  // ".." alone or as the first part leaves the working folder; a name that only begins with two dots does not
+  const leaves = rel === ".." || rel.startsWith(`..${sep}`) || isAbsolute(rel);
+  const under = rel !== "" && !leaves;
+  if (under && !isPlainProjectPath(from, rel) && lstatSync(compPath, { throwIfNoEntry: false })) {
+    throw new Error(
+      `${compPath} is a link or is reached through one, not a composition file; nothing was read or written`,
+    );
+  }
+  const content = readRegularFile(compPath);
+  if (content !== undefined) return content.toString("utf-8");
+  if (lstatSync(compPath, { throwIfNoEntry: false })) {
+    throw new Error(
+      `${compPath} is a link or not a regular file, not a composition file; nothing was read or written`,
+    );
+  }
+  throw new Error(`${compPath} does not exist`);
+}
+
+/**
+ * Saves the composition as a new file renamed over the old one, so a link put at the name since the
+ * read is replaced, not followed. The file keeps its permissions, and one that may not be written
+ * is refused as before. Until it has those permissions the new file is readable by its owner only.
+ * `written(temp)` runs once the text is in the new file, before it gets its permissions and its name.
+ */
+export function saveComposition(compPath, html, written = () => {}) {
+  const old = lstatSync(compPath, { throwIfNoEntry: false });
+  if (old?.isFile()) accessSync(compPath, constants.W_OK);
+  const mode = old?.isFile() ? old.mode & 0o777 : 0o666 & ~process.umask();
+  replaceFileWith(compPath, (temp) => {
+    // The helper's temp is empty and has default permissions: ours is made again, owner-only, and filled by the handle that made it.
+    rmSync(temp);
+    const file = openSync(temp, "wx", 0o600);
+    try {
+      writeFileSync(file, html);
+      written(temp);
+      fchmodSync(file, mode);
+    } finally {
+      closeSync(file);
+    }
+  });
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const compPath = resolve(args.comp);
   const compDir = dirname(compPath);
 
-  const html = readFileSync(compPath, "utf-8");
+  let html;
+  try {
+    html = readComposition(compPath);
+  } catch (error) {
+    fail(error.message);
+  }
   const {
     bed: bedEl,
     voices,
@@ -338,12 +447,21 @@ async function main() {
   );
 
   const profile = carveApi.carveProfile(args.strength);
+  // Every source is checked before any is decoded, so a refused name stops the carve with no ffmpeg run.
+  let voicePaths;
+  let bedPath = null;
+  try {
+    voicePaths = voices.map((v) => mediaSource(compDir, unescapeAttr(attrOf(v.tag, "src"))));
+    if (profile.duckDb > 0) bedPath = mediaSource(compDir, unescapeAttr(bedSrc));
+  } catch (error) {
+    fail(error.message);
+  }
   // Every voice summed onto the BED's clock before anything is measured. One
   // question — where and when is speech masking this bed — with one answer, even
   // when the answer comes from several people at different times.
   const voice = carveApi.mixCarveSources(
-    voices.map((v) => ({
-      samples: decode(resolve(compDir, unescapeAttr(attrOf(v.tag, "src")))),
+    voices.map((v, i) => ({
+      samples: decode(voicePaths[i]),
       offsetSeconds: startOf(v.tag) - startOf(bedTag),
     })),
     SAMPLE_RATE,
@@ -354,7 +472,7 @@ async function main() {
   // The level half of the carve needs both sides: "how far over the speech is this
   // bed" cannot be answered by listening to one of them. No offset — the mix is
   // already on the bed's clock.
-  const bed = profile.duckDb > 0 ? decode(resolve(compDir, unescapeAttr(bedSrc))) : null;
+  const bed = bedPath ? decode(bedPath) : null;
   const duck = bed ? carveApi.analyseCarveDuck(voice, bed, SAMPLE_RATE, profile, 0) : [];
 
   // Anything the author built by hand survives a carve; only the previous
@@ -478,7 +596,11 @@ async function main() {
   // go: `stripped` is the opening tag alone, so appending would land outside it.
   const nextTag = stripped.replace(/\/?>$/, (close) => `${written}${close}`);
   if (nextTag === stripped) fail("attribute write produced no change — refusing to save");
-  writeFileSync(compPath, html.replace(bedTag, nextTag));
+  try {
+    saveComposition(compPath, html.replace(bedTag, nextTag));
+  } catch (error) {
+    fail(`could not save ${args.comp}: ${error.message}`);
+  }
   process.stdout.write(`wrote ${args.comp} (id="${bedEl.id}")\n`);
 }
 
