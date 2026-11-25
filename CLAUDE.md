@@ -23,3 +23,10 @@ When the user sends raw footage:
 - Only use sound effects from `reelkit/sfx/` (Pixabay licence) or files the user provides.
 - The Whisper model downloads from huggingface.co. `HF_HUB_DISABLE_XET=1` is set inside the script.
 - `input/`, `work/` and `output/` are git-ignored. Do not commit footage.
+
+## ghost-editor (`.claude/skills/ghost-editor`, from github.com/kurbaitaev/ghost-editor @ d71bdb6)
+- The skill expects to live at `~/.claude/skills/ghost-editor`. In a fresh cloud session, first run:
+  `mkdir -p ~/.claude/skills && ln -sfn "$PWD/.claude/skills/ghost-editor" ~/.claude/skills/ghost-editor`
+- Then `pip install opencv-python-headless google-genai openai-whisper`,
+  `python3 ~/.claude/skills/ghost-editor/scripts/library_restore.py` (SFX + music, git-ignored) and check with `scripts/doctor.sh`.
+- Built for macOS; on Linux the macOS-only caption text check is unavailable. Gemini key is optional (B-roll checks).
